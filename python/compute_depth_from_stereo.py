@@ -7,6 +7,8 @@ import cv2
 import numpy as np
 import logging as log
 
+from tqdm import tqdm, trange
+
 from clubs_dataset_tools.stereo_matching import (
     rectify_images, stereo_match, StereoMatchingParams, CalibrationParams)
 from clubs_dataset_tools.filesystem_tools import (
@@ -35,29 +37,30 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
     timestamps = compare_image_names(images_left, images_right)
 
     if len(timestamps) != 0:
-        [
+        image_paths_left = [
             scene_folder + sensor_folder[0] + '/' + image_left
             for image_left in images_left
         ]
-        [
-            scene_folder + sensor_folder[0] + '/' + image_right
+        image_paths_right = [
+            scene_folder + sensor_folder[1] + '/' + image_right
             for image_right in images_right
         ]
 
-        images_left = read_images(
-            scene_folder + sensor_folder[0] + '/' + images_left)
-        images_right = read_images(
-            scene_folder + sensor_folder[1] + '/' + images_right)
+        ir_left = read_images(image_paths_left)
+        ir_right = read_images(image_paths_right)
 
         stereo_depth_folder = create_stereo_depth_folder(
             scene_folder + sensor_folder[2])
 
-        for i in range(len(images_left)):
+        # stereo_bar = tqdm(total=len(ir_left))
+        for i in trange(len(ir_left), desc="Stereo Matching Progress"):
+            log.debug("Rectifying " + str(i) + ". image pair")
             rectified_l, rectified_r, Q = rectify_images(
-                images_left[i], calib_params.camera_matrix_l,
-                calib_params.dist_coeffs_l, images_right[i],
+                ir_left[i], calib_params.camera_matrix_l,
+                calib_params.dist_coeffs_l, ir_right[i],
                 calib_params.camera_matrix_r, calib_params.dist_coeffs_r,
                 calib_params.extrinsics_r, calib_params.extrinsics_t)
+            log.debug("Stereo matching " + str(i) + '. image pair')
             depth_uint, depth_float, disparity_float = stereo_match(
                 rectified_l,
                 rectified_r,
@@ -67,8 +70,10 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
                 scale=10000)
             cv2.imwrite(stereo_depth_folder + '/' + timestamps[i] +
                         '_depth_images.png', depth_uint)
+        #     stereo_bar.update()
+        # stereo_bar.close()
     else:
-        log.error("Image names are not consistent for left and right image")
+        log.error("\nImage names are not consistent for left and right image")
 
 
 if __name__ == '__main__':
@@ -102,29 +107,54 @@ if __name__ == '__main__':
         '--right_image',
         type=str,
         help="Path to the right image used for stereo matching.")
+    parser.add_argument(
+        '--log',
+        type=str,
+        default='CRITICAL',
+        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
     args = parser.parse_args()
+
+    numeric_level = getattr(log, args.log.upper(), None)
+    log.basicConfig(level=numeric_level)
+    log.debug("Setting log verbosity to " + args.log)
 
     used_scenes = []
 
     stereo_params = StereoMatchingParams()
     calib_params = CalibrationParams()
     # TODO: add flags for loading from yaml.
+    # TODO: d435 has different calib params so change!
 
     if args.dataset_folder is not None:
+        log.debug("Received dataset_folder.")
         object_scenes, box_scenes = find_all_folders(args.dataset_folder)
-        if args.use_only_boxes is True:
-            used_scenes.append(box_scenes)
-        else:
-            used_scenes.append(object_scenes)
-            used_scenes.append(box_scenes)
 
-        for scene in used_scenes:
+        if args.use_only_boxes is True:
+            log.debug("Processing only box scenes.")
+            used_scenes = box_scenes
+        else:
+            log.debug("Processing both box and object scenes.")
+            used_scenes = object_scenes + box_scenes
+
+        progress_bar = tqdm(total=len(used_scenes) * 2, desc="Scene Progress")
+        for i in range(len(used_scenes)):
+            scene = used_scenes[i]
+            log.debug("Processing " + str(scene))
             d415_folder, d435_folder = find_ir_image_folders(scene)
 
-            compute_stereo_depth(scene, d415_folder, stereo_params,
-                                 calib_params)
-            compute_stereo_depth(scene, d435_folder, stereo_params,
-                                 calib_params)
+            # calib_params.read_from_yaml()
+            if d415_folder != []:
+                compute_stereo_depth(scene, d415_folder, stereo_params,
+                                     calib_params)
+            progress_bar.update()
+            # calib_params.read_from_yaml()
+            if d435_folder != []:
+                compute_stereo_depth(scene, d435_folder, stereo_params,
+                                     calib_params)
+            progress_bar.update()
+        progress_bar.close()
+
+    # parser.print_help()
 
 # If two images are passed in then just do the magic
 

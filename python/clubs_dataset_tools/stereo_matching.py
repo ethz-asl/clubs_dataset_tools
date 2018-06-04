@@ -3,6 +3,7 @@
 import yaml
 import numpy as np
 import cv2
+import logging as log
 
 
 class CalibrationParams:
@@ -134,15 +135,13 @@ def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
     rectified_l = cv2.remap(image_l, map_l1, map_l2, cv2.INTER_LINEAR)
     rectified_r = cv2.remap(image_r, map_r1, map_r2, cv2.INTER_LINEAR)
 
-    if (DEBUG_MODE):
-        print(RL)
-        print(RR)
-        print(PL)
-        print(PR)
-        print(Q)
-        print(valid_pix_ROI_l)
-        print(valid_pix_ROI_r)
-        # DISPLAY IMAGES
+    log.debug("RL:\n" + str(RL))
+    log.debug("RR:\n" + str(RR))
+    log.debug("PL:\n" + str(PL))
+    log.debug("PR:\n" + str(PR))
+    log.debug("Q:\n" + str(Q))
+    log.debug("valid_pix_ROI_l:\n" + str(valid_pix_ROI_l))
+    log.debug("valid_pix_ROI_r:\n" + str(valid_pix_ROI_r))
 
     return rectified_l, rectified_r, Q
 
@@ -181,8 +180,26 @@ def stereo_match(undistorted_rectified_l,
         stereo_params.uniqueness_ratio, stereo_params.speckle_window_size,
         stereo_params.speckle_range, stereo_params.mode)
 
-    disparity = stereo_matcher.compute(undistorted_rectified_l,
-                                       undistorted_rectified_r)
+    if undistorted_rectified_l.dtype == 'uint8':
+        uint8_undistorted_rectified_l = undistorted_rectified_l
+    elif undistorted_rectified_l.dtype == 'uint16':
+        uint8_undistorted_rectified_l = (
+            undistorted_rectified_l / 255).astype('uint8')
+    else:
+        log.error('\nUnknown image type!')
+        return
+
+    if undistorted_rectified_r.dtype == 'uint8':
+        uint8_undistorted_rectified_r = undistorted_rectified_r
+    elif undistorted_rectified_r.dtype == 'uint16':
+        uint8_undistorted_rectified_r = (
+            undistorted_rectified_r / 255).astype('uint8')
+    else:
+        log.error('\nUnknown image type!')
+        return
+
+    disparity = stereo_matcher.compute(uint8_undistorted_rectified_l,
+                                       uint8_undistorted_rectified_r)
 
     disparity_float = disparity.astype(np.float32) / 16.0
 
@@ -190,9 +207,5 @@ def stereo_match(undistorted_rectified_l,
 
     depth_uint = depth_float * scale
     depth_uint = depth_uint.astype(np.uint16)
-
-    if (DEBUG_MODE):
-        # DISPLAY DEPTH
-        pass
 
     return depth_uint, depth_float, disparity_float
