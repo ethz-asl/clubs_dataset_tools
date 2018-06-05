@@ -52,8 +52,8 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
         stereo_depth_folder = create_stereo_depth_folder(
             scene_folder + sensor_folder[2])
 
-        # stereo_bar = tqdm(total=len(ir_left))
-        for i in trange(len(ir_left), desc="Stereo Matching Progress"):
+        stereo_bar = tqdm(total=len(ir_left), desc="Stereo Matching Progress")
+        for i in range(len(ir_left)):
             log.debug("Rectifying " + str(i) + ". image pair")
             rectified_l, rectified_r, Q = rectify_images(
                 ir_left[i], calib_params.camera_matrix_l,
@@ -70,8 +70,8 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
                 scale=10000)
             cv2.imwrite(stereo_depth_folder + '/' + timestamps[i] +
                         '_depth_images.png', depth_uint)
-        #     stereo_bar.update()
-        # stereo_bar.close()
+            stereo_bar.update()
+        stereo_bar.close()
     else:
         log.error("\nImage names are not consistent for left and right image")
 
@@ -161,17 +161,17 @@ if __name__ == '__main__':
             progress_bar.update()
         progress_bar.close()
     elif args.scene_folder is not None:
-        log.debug("Processing single scene " + str(scene))
+        log.debug("Processing single scene " + str(args.scene_folder))
 
         d415_folder, d435_folder = find_ir_image_folders(args.scene_folder)
 
         calib_params.read_from_yaml(args.d415_calib_file)
         if d415_folder != []:
-            compute_stereo_depth(scene, d415_folder, stereo_params,
+            compute_stereo_depth(args.scene_folder, d415_folder, stereo_params,
                                  calib_params)
         calib_params.read_from_yaml(args.d435_calib_file)
         if d435_folder != []:
-            compute_stereo_depth(scene, d435_folder, stereo_params,
+            compute_stereo_depth(args.scene_folder, d435_folder, stereo_params,
                                  calib_params)
     else:
         parser.print_help()
