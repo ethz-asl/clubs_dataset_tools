@@ -100,14 +100,6 @@ if __name__ == '__main__':
     parser.add_argument(
         '--scene_folder', type=str, help="Path to the scene root folder.")
     parser.add_argument(
-        '--left_image',
-        type=str,
-        help="Path to the left image used for stereo matching.")
-    parser.add_argument(
-        '--right_image',
-        type=str,
-        help="Path to the right image used for stereo matching.")
-    parser.add_argument(
         '--log',
         type=str,
         default='CRITICAL',
@@ -150,30 +142,36 @@ if __name__ == '__main__':
             log.debug("Processing both box and object scenes.")
             used_scenes = object_scenes + box_scenes
 
-        progress_bar = tqdm(total=len(used_scenes) * 2, desc="Scene Progress")
+        progress_bar = tqdm(
+            total=len(used_scenes) * 2, desc="Overall Progress")
         for i in range(len(used_scenes)):
             scene = used_scenes[i]
             log.debug("Processing " + str(scene))
             d415_folder, d435_folder = find_ir_image_folders(scene)
 
-            # calib_params.read_from_yaml()
+            calib_params.read_from_yaml(args.d415_calib_file)
             if d415_folder != []:
                 compute_stereo_depth(scene, d415_folder, stereo_params,
                                      calib_params)
             progress_bar.update()
-            # calib_params.read_from_yaml()
+            calib_params.read_from_yaml(args.d435_calib_file)
             if d435_folder != []:
                 compute_stereo_depth(scene, d435_folder, stereo_params,
                                      calib_params)
             progress_bar.update()
         progress_bar.close()
+    elif args.scene_folder is not None:
+        log.debug("Processing single scene " + str(scene))
 
-    # parser.print_help()
+        d415_folder, d435_folder = find_ir_image_folders(args.scene_folder)
 
-# If two images are passed in then just do the magic
-
-# If two folders are passed in then just call:
-# read_images_from_folder before doing magic
-
-# If object is passed in:
-#
+        calib_params.read_from_yaml(args.d415_calib_file)
+        if d415_folder != []:
+            compute_stereo_depth(scene, d415_folder, stereo_params,
+                                 calib_params)
+        calib_params.read_from_yaml(args.d435_calib_file)
+        if d435_folder != []:
+            compute_stereo_depth(scene, d435_folder, stereo_params,
+                                 calib_params)
+    else:
+        parser.print_help()

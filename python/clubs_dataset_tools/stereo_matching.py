@@ -12,7 +12,12 @@ class CalibrationParams:
     """
 
     def __init__(self):
+        """
+        Constructor for CalibrationParams.
+        """
+
         log.debug("Initialized CalibrationParams with default values.")
+
         self.camera_matrix_l = np.array([[1387.426, 0.000,
                                           969.672], [0.000, 1386.698, 559.111],
                                          [0.000, 0.000, 1.000]])
@@ -28,11 +33,11 @@ class CalibrationParams:
             0.284531882325
         ])
         self.extrinsics_r = np.array(
-            [[0.999986084, 0.00131863323,
-              -0.00510805188], [-0.00130040816, 0.999992783, 0.00356959113],
-             [0.00511272200, -0.00356289891, 0.999980583]])
+            [[0.999986130, 0.00125724064,
+              -0.00511359975], [-0.00123899938, 0.999992869, 0.00356868523],
+             [0.00511805018, -0.00356230478, 0.999980555]])
         self.extrinsics_t = np.array(
-            [-0.0550535498, -0.0000566498348, -0.000588897826])
+            [-0.0550792390, -0.0000461457433, -0.000494267796])
 
     def read_from_yaml(self, yaml_file):
         """
@@ -62,6 +67,9 @@ class StereoMatchingParams:
     """
 
     def __init__(self):
+        """
+        Constructor for StereoMatchingParams.
+        """
 
         log.debug("Initialized StereoMatchingParams with default values.")
 
@@ -201,7 +209,7 @@ def stereo_match(undistorted_rectified_l,
         uint8_undistorted_rectified_l = (
             undistorted_rectified_l / 255).astype('uint8')
     else:
-        log.error('\nUnknown image type!')
+        log.error("\nUnknown image type!")
         return
 
     if undistorted_rectified_r.dtype == 'uint8':
@@ -210,9 +218,10 @@ def stereo_match(undistorted_rectified_l,
         uint8_undistorted_rectified_r = (
             undistorted_rectified_r / 255).astype('uint8')
     else:
-        log.error('\nUnknown image type!')
+        log.error("\nUnknown image type!")
         return
 
+    log.debug("Performing stereo matching.")
     disparity = stereo_matcher.compute(uint8_undistorted_rectified_l,
                                        uint8_undistorted_rectified_r)
 
