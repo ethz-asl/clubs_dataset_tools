@@ -112,6 +112,20 @@ if __name__ == '__main__':
         type=str,
         default='CRITICAL',
         help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
+    parser.add_argument(
+        '--d415_calib_file',
+        type=str,
+        default='config/realsense_hd_d415.yaml',
+        help=(
+            "Path to RealSense D415 calibration yaml file. By default located "
+            "in: config/realsense_hd_d415.yaml"))
+    parser.add_argument(
+        '--d435_calib_file',
+        type=str,
+        default='config/realsense_hd_d435.yaml',
+        help=(
+            "Path to RealSense D435 calibration yaml file. By default located "
+            "in: config/realsense_hd_d435.yaml"))
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)

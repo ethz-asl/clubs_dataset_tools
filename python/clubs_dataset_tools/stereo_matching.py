@@ -12,6 +12,7 @@ class CalibrationParams:
     """
 
     def __init__(self):
+        log.debug("Initialized CalibrationParams with default values.")
         self.camera_matrix_l = np.array([[1387.426, 0.000,
                                           969.672], [0.000, 1386.698, 559.111],
                                          [0.000, 0.000, 1.000]])
@@ -42,10 +43,17 @@ class CalibrationParams:
             parameters.
         """
 
+        log.debug("Initialized CalibrationParams from yaml file: " + yaml_file)
+
         with open(yaml_file, 'r') as file_pointer:
             calibration_params = yaml.load(file_pointer)
 
-        # TODO: Load the params.
+        self.camera_matrix_l = np.array(calibration_params['camera_matrix_l'])
+        self.dist_coeffs_l = np.array(calibration_params['dist_coeffs_l'])
+        self.camera_matrix_r = np.array(calibration_params['camera_matrix_r'])
+        self.dist_coeffs_r = np.array(calibration_params['dist_coeffs_r'])
+        self.extrinsics_r = np.array(calibration_params['extrinsics_r'])
+        self.extrinsics_t = np.array(calibration_params['extrinsics_t'])
 
 
 class StereoMatchingParams:
@@ -54,6 +62,9 @@ class StereoMatchingParams:
     """
 
     def __init__(self):
+
+        log.debug("Initialized StereoMatchingParams with default values.")
+
         self.min_disparity = 39
         self.num_disparities = 272
         self.block_size = 17
@@ -73,6 +84,9 @@ class StereoMatchingParams:
         Input:
             yaml_file - path to the yaml file containing the stereo parameters.
         """
+
+        log.debug(
+            "Initialized StereoMatchingParams from yaml file: " + yaml_file)
 
         with open(yaml_file, 'r') as file_pointer:
             stereo_params = yaml.load(file_pointer)
@@ -135,6 +149,7 @@ def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
     rectified_l = cv2.remap(image_l, map_l1, map_l2, cv2.INTER_LINEAR)
     rectified_r = cv2.remap(image_r, map_r1, map_r2, cv2.INTER_LINEAR)
 
+    log.debug("Rectification results: ")
     log.debug("RL:\n" + str(RL))
     log.debug("RR:\n" + str(RR))
     log.debug("PL:\n" + str(PL))
