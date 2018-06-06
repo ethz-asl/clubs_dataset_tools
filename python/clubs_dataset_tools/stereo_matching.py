@@ -6,61 +6,6 @@ import cv2
 import logging as log
 
 
-class CalibrationParams:
-    """
-    Camera intrinsic and extrinsic parameters.
-    """
-
-    def __init__(self):
-        """
-        Constructor for CalibrationParams.
-        """
-
-        log.debug("Initialized CalibrationParams with default values.")
-
-        self.camera_matrix_l = np.array([[1387.426, 0.000,
-                                          969.672], [0.000, 1386.698, 559.111],
-                                         [0.000, 0.000, 1.000]])
-        self.dist_coeffs_l = np.array([
-            0.126991973128, -0.351631362871, 0.000823677750, 0.000733769806,
-            0.250226895328
-        ])
-        self.camera_matrix_r = np.array([[1387.668, 0.000,
-                                          953.792], [0.000, 1387.664, 553.310],
-                                         [0.000, 0.000, 1.000]])
-        self.dist_coeffs_r = np.array([
-            0.128268524583, -0.368150717004, -0.000893114163, 0.001179459198,
-            0.284531882325
-        ])
-        self.extrinsics_r = np.array(
-            [[0.999986130, 0.00125724064,
-              -0.00511359975], [-0.00123899938, 0.999992869, 0.00356868523],
-             [0.00511805018, -0.00356230478, 0.999980555]])
-        self.extrinsics_t = np.array(
-            [-0.0550792390, -0.0000461457433, -0.000494267796])
-
-    def read_from_yaml(self, yaml_file):
-        """
-        Function that read the calibration parameters from the yaml file.
-
-        Input:
-            yaml_file - path to the yaml file containing the calibration
-            parameters.
-        """
-
-        log.debug("Initialized CalibrationParams from yaml file: " + yaml_file)
-
-        with open(yaml_file, 'r') as file_pointer:
-            calibration_params = yaml.load(file_pointer)
-
-        self.camera_matrix_l = np.array(calibration_params['camera_matrix_l'])
-        self.dist_coeffs_l = np.array(calibration_params['dist_coeffs_l'])
-        self.camera_matrix_r = np.array(calibration_params['camera_matrix_r'])
-        self.dist_coeffs_r = np.array(calibration_params['dist_coeffs_r'])
-        self.extrinsics_r = np.array(calibration_params['extrinsics_r'])
-        self.extrinsics_t = np.array(calibration_params['extrinsics_t'])
-
-
 class StereoMatchingParams:
     """
     Stereo matching algorithm parameters.
@@ -87,7 +32,7 @@ class StereoMatchingParams:
 
     def read_from_yaml(self, yaml_file):
         """
-        Function that read the stereo parameters from the yaml file.
+        Function that reads the stereo parameters from the yaml file.
 
         Input:
             yaml_file - path to the yaml file containing the stereo parameters.

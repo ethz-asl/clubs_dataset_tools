@@ -118,13 +118,14 @@ def find_ir_image_folders(input_folder):
     return d415_image_folders, d435_image_folders
 
 
-def find_rgb_d_image_folders(input_folder):
+def find_rgb_d_image_folders(input_folder, use_stereo_depth=False):
     """
     Function that returns rgb and depth folders paths, if they exist, for all
     the sensors. Path is relative to the input folder path.
 
     Input:
         input_folder - path to specific object/box folder
+        use_stereo_depth - if True, depth from stereo will be used
 
     Output:
         ps_image_folders - primesense rgb and depth image folder path relative
@@ -153,7 +154,10 @@ def find_rgb_d_image_folders(input_folder):
     d415_rgb = '/realsense_d415/rgb_images'
     if os.path.isdir(input_folder + d415_rgb):
         d415_image_folders.append(d415_rgb)
-    d415_depth = '/realsense_d415/depth_images'
+    if use_stereo_depth:
+        d415_depth = '/realsense_d415/stereo_depth_images'
+    else:
+        d415_depth = '/realsense_d415/depth_images'
     if os.path.isdir(input_folder + d415_depth):
         d415_image_folders.append(d415_depth)
     if len(d415_image_folders) is not 3:
@@ -167,7 +171,10 @@ def find_rgb_d_image_folders(input_folder):
     d435_rgb = '/realsense_d435/rgb_images'
     if os.path.isdir(input_folder + d435_rgb):
         d435_image_folders.append(d435_rgb)
-    d435_depth = '/realsense_d435/depth_images'
+    if use_stereo_depth:
+        d435_depth = '/realsense_d435/stereo_depth_images'
+    else:
+        d435_depth = '/realsense_d435/depth_images'
     if os.path.isdir(input_folder + d435_depth):
         d435_image_folders.append(d435_depth)
     if len(d435_image_folders) is not 3:
@@ -251,3 +258,24 @@ def create_stereo_depth_folder(sensor_folder):
     log.debug("Created a new stereo depth folder: \n" + stereo_depth_folder)
 
     return stereo_depth_folder
+
+
+def create_point_cloud_folder(sensor_folder):
+    """
+    Function that creates the folder for point clouds if it does not exist.
+
+    Input:
+        sensor_folder - path to the sensor folder
+
+    Output:
+        point_cloud_folder - path to the created point_cloud folder
+    """
+
+    point_cloud_folder = sensor_folder + '/point_clouds'
+
+    if not os.path.exists(point_cloud_folder):
+        os.makedirs(point_cloud_folder)
+
+    log.debug("Created a new point_cloud folder: \n" + point_cloud_folder)
+
+    return point_cloud_folder

@@ -1,19 +1,17 @@
 #!/usr/bin/env python
 
 import argparse
-import sys
-import os
 import cv2
-import numpy as np
 import logging as log
 
-from tqdm import tqdm, trange
+from tqdm import tqdm
 
-from clubs_dataset_tools.stereo_matching import (
-    rectify_images, stereo_match, StereoMatchingParams, CalibrationParams)
+from clubs_dataset_tools.stereo_matching import (rectify_images, stereo_match,
+                                                 StereoMatchingParams)
 from clubs_dataset_tools.filesystem_tools import (
     read_images, find_images_in_folder, find_all_folders,
     find_ir_image_folders, compare_image_names, create_stereo_depth_folder)
+from clubs_dataset_tools.common import (CalibrationParams)
 
 
 def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
@@ -56,16 +54,17 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
         for i in range(len(ir_left)):
             log.debug("Rectifying " + str(i) + ". image pair")
             rectified_l, rectified_r, Q = rectify_images(
-                ir_left[i], calib_params.camera_matrix_l,
-                calib_params.dist_coeffs_l, ir_right[i],
-                calib_params.camera_matrix_r, calib_params.dist_coeffs_r,
-                calib_params.extrinsics_r, calib_params.extrinsics_t)
+                ir_left[i], calib_params.ir1_intrinsics,
+                calib_params.ir1_distortion_coeffs, ir_right[i],
+                calib_params.ir2_intrinsics,
+                calib_params.ir2_distortion_coeffs, calib_params.extrinsics_r,
+                calib_params.extrinsics_t)
             log.debug("Stereo matching " + str(i) + '. image pair')
             depth_uint, depth_float, disparity_float = stereo_match(
                 rectified_l,
                 rectified_r,
                 calib_params.extrinsics_t[0],
-                calib_params.camera_matrix_l[0, 0],
+                calib_params.ir1_intrinsics[0, 0],
                 stereo_params,
                 scale=10000)
             cv2.imwrite(stereo_depth_folder + '/' + timestamps[i] +
@@ -78,17 +77,15 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description=
-        ("Perform stereo matching for the infrared images and save it as a "
-         "depth image. There are three different ways this function can be "
-         "called. First one is by passing in the dataset root folder "
-         "(flag --dataset_folder) which will create a new folder for each "
-         "object/scene and each sensor (d415 and d435), containing the depth "
-         "image obtained through stereo matching. Second way is to pass "
-         "object/box scene root folder (flag --scene_folder) which will do "
-         "the same for that specific scene. Last way is to directly pass in "
-         "the right and left image (flags --left_image and --right_image) "
-         "which will create a depth map in the current folder."))
+        description=(
+            "Perform stereo matching for the infrared images and save it as a "
+            "depth image. There are two different ways this function can be "
+            "called. First one is by passing in the dataset root folder "
+            "(flag --dataset_folder) which will create a new folder for each "
+            "object/scene and each sensor (d415 and d435), containing the "
+            "depth image obtained through stereo matching. Second way is to "
+            "pass object/box scene root folder (flag --scene_folder) which "
+            "will do the same for that specific scene."))
     parser.add_argument(
         '--dataset_folder', type=str, help="Path to the dataset root folder.")
     parser.add_argument(
@@ -128,8 +125,6 @@ if __name__ == '__main__':
 
     stereo_params = StereoMatchingParams()
     calib_params = CalibrationParams()
-    # TODO: add flags for loading from yaml.
-    # TODO: d435 has different calib params so change!
 
     if args.dataset_folder is not None:
         log.debug("Received dataset_folder.")
