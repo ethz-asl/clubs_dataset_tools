@@ -21,6 +21,9 @@ point_ply = '%(x)f %(y)f %(z)f %(r)d %(g)d %(b)d\n'
 
 end_ply = '%(width)d %(height)d\n'
 
+DISTANCE_LOWER_LIMIT = 0.0
+DISTANCE_UPPER_LIMIT = 5.0
+
 
 def convert_depth_uint_to_float(uint_depth_image,
                                 z_scaling=1.0,
@@ -33,7 +36,8 @@ def convert_depth_uint_to_float(uint_depth_image,
         uint_depth_image - depth image of type uint16
         z_scaling - correction for z values to correspond to true metric values
         depth_scale_mm - conversion factor for depth (e.g. 1 means that value
-        of 1000 in uint16 depth image corresponds to 1m)
+        of 1000 in uint16 depth image corresponds to 1.0 in float depth image
+        and to 1m in real world)
 
     Output:
         float_depth_image - depth image of type float
@@ -64,14 +68,32 @@ def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
     return (float_depth_image * 1000 / depth_scale_mm).astype('uint16')
 
 
-def register_depth_image(float_depth_image,
-                         rgb_intrinsics,
-                         depth_intrinsics,
-                         extrinsics,
-                         rgb_shape,
-                         depth_scale_mm=1.0):
+def save_register_depth_image(float_depth_image,
+                              rgb_intrinsics,
+                              depth_intrinsics,
+                              extrinsics,
+                              rgb_shape,
+                              registered_depth_path,
+                              depth_scale_mm=1.0):
     """
+    Function that registers depth image to rgb image. Some of the points are
+    lost due to discretization errors.
 
+    Input:
+        float_depth_image - depth image converted to float type
+        rgb_intrinsics - intrinsic parameters of the rgb camera
+        depth_intrinsics - intrinsic parameters of the depth camera
+        extrinsics - extrinsic parameters between rgb and depth cameras
+        rgb_shape - image size of rgb image (rows, columns)
+        registered_depth_path - path where to store the image including file
+        name and extension
+        depth_scale_mm - conversion factor for depth (e.g. 1 means that value
+        of 1000 in uint16 depth image corresponds to 1.0 in float depth image
+        and to 1m in real world)
+
+    Output:
+        float_depth_registered - depth image registered to rgb, float type
+        uint_depth_registered - depth image registered to rgb, uint16 type
     """
 
     depth_points_3d = cv2.rgbd.depthTo3d(float_depth_image, depth_intrinsics)
@@ -94,6 +116,8 @@ def register_depth_image(float_depth_image,
 
     uint_depth_registered = convert_depth_float_to_uint(float_depth_registered)
 
+    cv2.imwrite(registered_depth_path, uint_depth_registered)
+
     return float_depth_registered, uint_depth_registered
 
 
@@ -111,16 +135,11 @@ def save_colored_point_cloud_to_ply(rgb_image,
 
     if register_depth:
         log.debug(("Using depth_registered image, therefore the resulting "
-                   "point cloud is organized in the order of the rgb image."))
+                   "point cloud is organized in the order of the rgb image."
+                   "NOTE: Make sure that the input depth_image is "
+                   "registered!"))
 
-        rgb_rows, rgb_cols, rgb_channels = np.shape(rgb_image)
-
-        float_depth_registered, uint_depth_registered = register_depth_image(
-            depth_image, rgb_intrinsics, depth_intrinsics, extrinsics,
-            (rgb_rows, rgb_cols), depth_scale_mm)
-
-        depth_points_3d = cv2.rgbd.depthTo3d(float_depth_registered,
-                                             rgb_intrinsics)
+        depth_points_3d = cv2.rgbd.depthTo3d(depth_image, rgb_intrinsics)
 
         n_rows, n_cols, n_coord = np.shape(depth_points_3d)
 
@@ -133,21 +152,27 @@ def save_colored_point_cloud_to_ply(rgb_image,
                     point_x = depth_points_3d[i, j, 0]
                     point_y = depth_points_3d[i, j, 1]
                     point_z = depth_points_3d[i, j, 2]
-                    point_r = rgb_image[i, j, 0]
+
+                    point_b = rgb_image[i, j, 0]
                     point_g = rgb_image[i, j, 1]
-                    point_b = rgb_image[i, j, 2]
-                    file.write((point_ply % dict(
-                        x=point_x,
-                        y=point_y,
-                        z=point_z,
-                        r=point_r,
-                        g=point_g,
-                        b=point_b)).encode('utf-8'))
+                    point_r = rgb_image[i, j, 2]
+
+                    if (point_z > DISTANCE_LOWER_LIMIT
+                            and point_z < DISTANCE_UPPER_LIMIT):
+                        ply_file.write((point_ply % dict(
+                            x=point_x,
+                            y=point_y,
+                            z=point_z,
+                            r=point_r,
+                            g=point_g,
+                            b=point_b)).encode('utf-8'))
+                    else:
+                        ply_file.write((point_ply % dict(
+                            x=0.0, y=0.0, z=0.0, r=0, g=0,
+                            b=0)).encode('utf-8'))
 
             ply_file.write(
                 (end_ply % dict(width=n_cols, height=n_rows)).encode('utf-8'))
-
-        return float_depth_registered, uint_depth_registered
 
     else:
         log.debug(("Using unregistered depth image, therefore the resulting "
@@ -171,27 +196,38 @@ def save_colored_point_cloud_to_ply(rgb_image,
 
             for i in range(n_rows):
                 for j in range(n_cols):
-                    point_x = depth_points_3d[i, j, 0]
-                    point_y = depth_points_3d[i, j, 1]
-                    point_z = depth_points_3d[i, j, 2]
+                    point_x = depth_points_in_rgb_frame[i, j, 0]
+                    point_y = depth_points_in_rgb_frame[i, j, 1]
+                    point_z = depth_points_in_rgb_frame[i, j, 2]
 
-                    u = int(fx * point_x / point_z + cx + 0.5)
-                    v = int(fy * point_y / point_z + cy + 0.5)
-                    point_r = rgb_image[u, v, 0]
-                    point_g = rgb_image[u, v, 1]
-                    point_b = rgb_image[u, v, 2]
+                    height, width, channels = rgb_image.shape
+                    if (point_z > DISTANCE_LOWER_LIMIT
+                            and point_z < DISTANCE_UPPER_LIMIT):
+                        u = int(fx * point_x / point_z + cx + 0.5)
+                        v = int(fy * point_y / point_z + cy + 0.5)
 
-                    file.write((point_ply % dict(
-                        x=point_x,
-                        y=point_y,
-                        z=point_z,
-                        r=point_r,
-                        g=point_g,
-                        b=point_b)).encode('utf-8'))
+                        if (u >= 0 and u < width and v >= 0 and v < height):
+                            point_b = rgb_image[v, u, 0]
+                            point_g = rgb_image[v, u, 1]
+                            point_r = rgb_image[v, u, 2]
+
+                            ply_file.write((point_ply % dict(
+                                x=point_x,
+                                y=point_y,
+                                z=point_z,
+                                r=point_r,
+                                g=point_g,
+                                b=point_b)).encode('utf-8'))
+                        else:
+                            ply_file.write((point_ply % dict(
+                                x=0.0, y=0.0, z=0.0, r=0, g=0,
+                                b=0)).encode('utf-8'))
+                    else:
+                        ply_file.write((point_ply % dict(
+                            x=0.0, y=0.0, z=0.0, r=0, g=0,
+                            b=0)).encode('utf-8'))
 
             ply_file.write(
                 (end_ply % dict(width=n_cols, height=n_rows)).encode('utf-8'))
 
     log.debug('Finished writing the file: ' + cloud_path)
-
-    return [], []
