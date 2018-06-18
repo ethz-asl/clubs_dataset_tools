@@ -79,10 +79,10 @@ def find_ir_image_folders(input_folder):
         input_folder - path to specific object/box folder
 
     Output:
-        d415_image_folders - realsense d415 ir left and right image folder path
-        relative to the input_folder and sensor root folder
-        d435_image_folders - realsense d435 ir left and right image folder path
-        relative to the input_folder and sensor root folder
+        d415_image_folders - realsense d415 root, ir left and right image
+        folder path relative to the input_folder and sensor root folder
+        d435_image_folders - realsense d435 root, ir left and right image
+        folder path relative to the input_folder and sensor root folder
     """
 
     d415_image_folders = []
@@ -128,12 +128,12 @@ def find_rgb_d_image_folders(input_folder, use_stereo_depth=False):
         use_stereo_depth - if True, depth from stereo will be used
 
     Output:
-        ps_image_folders - primesense rgb and depth image folder path relative
-        to the input_folder
-        d415_image_folders - realsense d415 rgb and depth image folder path
+        ps_image_folders - primesense root, rgb and depth image folder path
         relative to the input_folder
-        d435_image_folders - realsense d435 rgb and depth image folder path
-        relative to the input_folder
+        d415_image_folders - realsense d415 root, rgb and depth image folder
+        path relative to the input_folder
+        d435_image_folders - realsense d435 root, rgb and depth image folder
+        path relative to the input_folder
     """
 
     ps_image_folders = []
@@ -143,6 +143,7 @@ def find_rgb_d_image_folders(input_folder, use_stereo_depth=False):
     ps_depth = '/primesense/depth_images'
     if os.path.isdir(input_folder + ps_depth):
         ps_image_folders.append(ps_depth)
+    ps_image_folders.append('/primesense')
     if len(ps_image_folders) is not 3:
         log.error("\nPS rgb and depth folders could not be found!\n" +
                   "Looking for:\n" + str(input_folder + ps_rgb) + "\n" +
@@ -160,6 +161,7 @@ def find_rgb_d_image_folders(input_folder, use_stereo_depth=False):
         d415_depth = '/realsense_d415/depth_images'
     if os.path.isdir(input_folder + d415_depth):
         d415_image_folders.append(d415_depth)
+    d415_image_folders.append('/realsense_d415')
     if len(d415_image_folders) is not 3:
         log.error("\nD415 rgb and depth folders could not be found!\n" +
                   "Looking for:\n" + str(input_folder + d415_rgb) + "\n" +
@@ -177,6 +179,7 @@ def find_rgb_d_image_folders(input_folder, use_stereo_depth=False):
         d435_depth = '/realsense_d435/depth_images'
     if os.path.isdir(input_folder + d435_depth):
         d435_image_folders.append(d435_depth)
+    d435_image_folders.append('/realsense_d435')
     if len(d435_image_folders) is not 3:
         log.error("\nD435 rgb and depth folders could not be found!" +
                   "Looking for:\n" + str(input_folder + d435_rgb) + "\n" +
@@ -276,6 +279,29 @@ def create_point_cloud_folder(sensor_folder):
     if not os.path.exists(point_cloud_folder):
         os.makedirs(point_cloud_folder)
 
-    log.debug("Created a new point_cloud folder: \n" + point_cloud_folder)
+    log.debug("Created a new point_clouds folder: \n" + point_cloud_folder)
 
     return point_cloud_folder
+
+
+def create_depth_registered_folder(sensor_folder):
+    """
+    Function that creates the folder for registered depth images if it does
+    not exist.
+
+    Input:
+        sensor_folder - path to the sensor folder
+
+    Output:
+        depth_registered_folder - path to the created point_cloud folder
+    """
+
+    depth_registered_folder = sensor_folder + '/depth_registered_images'
+
+    if not os.path.exists(depth_registered_folder):
+        os.makedirs(depth_registered_folder)
+
+    log.debug("Created a new depth_registered_images folder: \n" +
+              depth_registered_folder)
+
+    return depth_registered_folder

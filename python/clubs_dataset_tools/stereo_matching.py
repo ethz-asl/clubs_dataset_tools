@@ -170,7 +170,7 @@ def stereo_match(undistorted_rectified_l,
     disparity = stereo_matcher.compute(uint8_undistorted_rectified_l,
                                        uint8_undistorted_rectified_r)
 
-    disparity_float = disparity.astype(np.float32) / 16.0
+    disparity_float = -disparity.astype(np.float32) / 16.0
 
     depth_float = baseline * focal_length / disparity_float
 

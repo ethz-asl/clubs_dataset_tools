@@ -72,7 +72,7 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
             stereo_bar.update()
         stereo_bar.close()
     else:
-        log.error("\nImage names are not consistent for left and right image")
+        log.error("\nImage names are not consistent for left and right image.")
 
 
 if __name__ == '__main__':
@@ -106,15 +106,15 @@ if __name__ == '__main__':
         type=str,
         default='config/realsense_hd_d415.yaml',
         help=(
-            "Path to RealSense D415 calibration yaml file. By default located "
-            "in: config/realsense_hd_d415.yaml"))
+            "Path to RealSense D415 calibration yaml file. By default: "
+            "config/realsense_hd_d415.yaml"))
     parser.add_argument(
         '--d435_calib_file',
         type=str,
         default='config/realsense_hd_d435.yaml',
         help=(
-            "Path to RealSense D435 calibration yaml file. By default located "
-            "in: config/realsense_hd_d435.yaml"))
+            "Path to RealSense D435 calibration yaml file. By default: "
+            "config/realsense_hd_d435.yaml"))
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)
