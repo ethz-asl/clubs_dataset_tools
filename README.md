@@ -3,4 +3,5 @@ Tools for the CLUBS dataset
 
 
 # Requirements
-oepncv, numpy, yaml, libtiff, logging, tqdm, opencv-contrib-python
+Python packages:
+oepncv, opencv-contrib-python, numpy, yaml, libtiff, logging, tqdm

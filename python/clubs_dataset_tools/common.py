@@ -71,6 +71,7 @@ class CalibrationParams:
         self.z_scaling = 1.000000
         self.depth_scale_mm = 0.100000
 
+
     def read_from_yaml(self, yaml_file):
         """
         Function that reads the calibration parameters from the yaml file.
@@ -108,3 +109,10 @@ class CalibrationParams:
 
         self.extrinsics_r = inv_extrinsics[:3, :3]
         self.extrinsics_t = inv_extrinsics[:3, 3]
+
+        self.rgb_width = calibration_params['rgb_width']
+        self.rgb_height = calibration_params['rgb_height']
+        self.depth_width = calibration_params['depth_width']
+        self.depth_height = calibration_params['depth_height']
+        self.z_scaling = calibration_params['z_scaling']
+        self.depth_scale_mm = calibration_params['depth_scale_mm']
