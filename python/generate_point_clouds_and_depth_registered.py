@@ -174,6 +174,8 @@ if __name__ == '__main__':
 
     used_scenes = []
 
+    calib_params = CalibrationParams()
+
     if args.dataset_folder is not None:
         log.debug("Received dataset_folder.")
         object_scenes, box_scenes = find_all_folders(args.dataset_folder)
@@ -184,8 +186,6 @@ if __name__ == '__main__':
         else:
             log.debug("Processing both box and object scenes.")
             used_scenes = object_scenes + box_scenes
-
-        calib_params = CalibrationParams()
 
         progress_bar = tqdm(
             total=len(used_scenes) * 3, desc="Overall Progress")
@@ -207,14 +207,14 @@ if __name__ == '__main__':
             if d415_folder != []:
                 generate_point_cloud(
                     scene, d415_folder, calib_params, args.save_point_clouds,
-                    args.save_depth_registered, arg.use_stereo_depth)
+                    args.save_depth_registered, args.use_stereo_depth)
             progress_bar.update()
 
             calib_params.read_from_yaml(args.d435_calib_file)
             if d435_folder != []:
                 generate_point_cloud(
                     scene, d435_folder, calib_params, args.save_point_clouds,
-                    args.save_depth_registered, arg.use_stereo_depth)
+                    args.save_depth_registered, args.use_stereo_depth)
             progress_bar.update()
         progress_bar.close()
     elif args.scene_folder is not None:
@@ -232,13 +232,14 @@ if __name__ == '__main__':
 
         calib_params.read_from_yaml(args.d415_calib_file)
         if d415_folder != []:
-            generate_point_cloud(scene, d415_folder, calib_params,
-                                 args.save_point_clouds,
-                                 args.save_depth_registered)
+            generate_point_cloud(
+                scene, d415_folder, calib_params, args.save_point_clouds,
+                args.save_depth_registered, args.use_stereo_depth)
+
         calib_params.read_from_yaml(args.d435_calib_file)
         if d435_folder != []:
-            generate_point_cloud(scene, d435_folder, calib_params,
-                                 args.save_point_clouds,
-                                 args.save_depth_registered)
+            generate_point_cloud(
+                scene, d435_folder, calib_params, args.save_point_clouds,
+                args.save_depth_registered, args.use_stereo_depth)
     else:
         parser.print_help()

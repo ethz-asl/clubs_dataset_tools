@@ -71,7 +71,6 @@ class CalibrationParams:
         self.z_scaling = 1.000000
         self.depth_scale_mm = 0.100000
 
-
     def read_from_yaml(self, yaml_file):
         """
         Function that reads the calibration parameters from the yaml file.

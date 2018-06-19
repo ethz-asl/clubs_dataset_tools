@@ -18,17 +18,23 @@ class StereoMatchingParams:
 
         log.debug("Initialized StereoMatchingParams with default values.")
 
-        self.min_disparity = 39
+        self.min_disparity = 15
         self.num_disparities = 272
-        self.block_size = 17
-        self.p1 = 201
-        self.p2 = 948
+        self.block_size = 25
+        self.p1 = 150
+        self.p2 = 520
         self.disp_12_max_diff = -1
-        self.pre_filter_cap = 9
-        self.uniqueness_ratio = 19
+        self.pre_filter_cap = 10
+        self.uniqueness_ratio = 30
         self.speckle_window_size = 2048
         self.speckle_range = 1
         self.mode = cv2.StereoSGBM_MODE_HH4
+        self.apply_bilateral_filter = True
+        self.bilateral_filter_size = 21
+        self.bilateral_filter_sigma = 30
+        self.apply_wls_filter = False
+        self.wls_filter_sigma_color = 0.8
+        self.wls_filter_lambda = 100
 
     def read_from_yaml(self, yaml_file):
         """
@@ -170,7 +176,32 @@ def stereo_match(undistorted_rectified_l,
     disparity = stereo_matcher.compute(uint8_undistorted_rectified_l,
                                        uint8_undistorted_rectified_r)
 
-    disparity_float = -disparity.astype(np.float32) / 16.0
+    if stereo_params.apply_wls_filter:
+        right_macher = cv2.StereoSGBM_create(
+            -(stereo_params.min_disparity + stereo_params.num_disparities) + 1,
+            stereo_params.num_disparities, stereo_params.block_size,
+            stereo_params.p1, stereo_params.p2, stereo_params.disp_12_max_diff,
+            stereo_params.pre_filter_cap, stereo_params.uniqueness_ratio,
+            stereo_params.speckle_window_size, stereo_params.speckle_range,
+            stereo_params.mode)
+        disparity_right = right_macher.compute(uint8_undistorted_rectified_r,
+                                               uint8_undistorted_rectified_l)
+
+        wls_filter = cv2.ximgproc.createDisparityWLSFilter(stereo_matcher)
+        wls_filter.setLambda(stereo_params.wls_filter_lambda)
+        wls_filter.setSigmaColor(stereo_params.wls_filter_sigma_color)
+        filtered_image = wls_filter.filter(
+            disparity, uint8_undistorted_rectified_l, None, disparity_right,
+            None, uint8_undistorted_rectified_r)
+    else:
+        filtered_image = disparity
+
+    disparity_float = -filtered_image.astype(np.float32) / 16.0
+    if stereo_params.apply_bilateral_filter:
+        disparity_float = cv2.bilateralFilter(
+            disparity_float, stereo_params.bilateral_filter_size,
+            stereo_params.bilateral_filter_sigma,
+            stereo_params.bilateral_filter_sigma)
 
     depth_float = baseline * focal_length / disparity_float
 
