@@ -89,18 +89,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--dataset_folder', type=str, help="Path to the dataset root folder.")
     parser.add_argument(
-        '--use_only_boxes',
-        type=bool,
-        default=False,
-        help=("If this flag is set to True, depth from stereo will only be "
-              "computed for the box scenes."))
-    parser.add_argument(
         '--scene_folder', type=str, help="Path to the scene root folder.")
-    parser.add_argument(
-        '--log',
-        type=str,
-        default='CRITICAL',
-        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
     parser.add_argument(
         '--d415_calib_file',
         type=str,
@@ -115,6 +104,16 @@ if __name__ == '__main__':
         help=(
             "Path to RealSense D435 calibration yaml file. By default: "
             "config/realsense_hd_d435.yaml"))
+    parser.add_argument(
+        '--use_only_boxes',
+        action='store_true',
+        help=("If this flag is set, depth from stereo will only be computed "
+              "for the box scenes."))
+    parser.add_argument(
+        '--log',
+        type=str,
+        default='CRITICAL',
+        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)

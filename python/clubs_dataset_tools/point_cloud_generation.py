@@ -109,12 +109,20 @@ def save_register_depth_image(float_depth_image,
 
     log.debug("Computing the registered depth image.")
 
-    for point in depth_points_in_rgb_frame:
-        u = int(fx * point.x / point.z + cx + 0.5)
-        v = int(fy * point.y / point.z + cy + 0.5)
-        float_depth_registered[u, v] = point.z
+    for points in depth_points_in_rgb_frame:
+        for point in points:
+            u = int(fx * point[0] / point[2] + cx + 0.5)
+            v = int(fy * point[1] / point[2] + cy + 0.5)
+
+            height = rgb_shape[0]
+            width = rgb_shape[1]
+            if (u >= 0 and u < width and v >= 0 and v < height):
+                float_depth_registered[v, u] = point[2]
 
     uint_depth_registered = convert_depth_float_to_uint(float_depth_registered)
+    kernel = np.ones((5, 5), np.uint16)
+    uint_depth_registered = cv2.morphologyEx(uint_depth_registered,
+                                             cv2.MORPH_CLOSE, kernel)
 
     cv2.imwrite(registered_depth_path, uint_depth_registered)
 
@@ -124,6 +132,7 @@ def save_register_depth_image(float_depth_image,
 def save_colored_point_cloud_to_ply(rgb_image,
                                     depth_image,
                                     rgb_intrinsics,
+                                    rgb_distortion,
                                     depth_intrinsics,
                                     extrinsics,
                                     cloud_path,
@@ -132,6 +141,8 @@ def save_colored_point_cloud_to_ply(rgb_image,
     """
 
     """
+
+    rgb_image = cv2.undistort(rgb_image, rgb_intrinsics, rgb_distortion)
 
     if register_depth:
         log.debug(("Using depth_registered image, therefore the resulting "

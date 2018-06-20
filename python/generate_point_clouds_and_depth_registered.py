@@ -71,12 +71,21 @@ def generate_point_cloud(scene_folder,
                 depth_registerd_path = (
                     depth_registered_folder + '/' + timestamps[i] +
                     '_depth_registered_image.png')
-                float_depth_reg, uint_depth_reg = save_register_depth_image(
-                    float_depth_image, calib_params.rgb_intrinsics,
-                    calib_params.depth_intrinsics,
-                    calib_params.depth_extrinsics,
-                    (calib_params.rgb_height, calib_params.rgb_width),
-                    depth_registerd_path, calib_params.depth_scale_mm)
+                if use_stereo_depth:
+                    float_depth_reg, uint_depth_reg = save_register_depth_image(
+                        float_depth_image, calib_params.rgb_intrinsics,
+                        calib_params.ir1_intrinsics,
+                        calib_params.depth_extrinsics,
+                        (calib_params.rgb_height, calib_params.rgb_width),
+                        depth_registerd_path, calib_params.depth_scale_mm)
+                else:
+                    float_depth_reg, uint_depth_reg = save_register_depth_image(
+                        float_depth_image, calib_params.rgb_intrinsics,
+                        calib_params.depth_intrinsics,
+                        calib_params.depth_extrinsics,
+                        (calib_params.rgb_height, calib_params.rgb_width),
+                        depth_registerd_path, calib_params.depth_scale_mm)
+
             if save_point_clouds:
                 point_cloud_path = (point_cloud_folder + '/' + timestamps[i] +
                                     '_point_cloud.ply')
@@ -85,6 +94,7 @@ def generate_point_cloud(scene_folder,
                         rgb_images[i],
                         float_depth_image,
                         calib_params.rgb_intrinsics,
+                        calib_params.rgb_distortion_coeffs,
                         calib_params.ir1_intrinsics,
                         calib_params.depth_extrinsics,
                         point_cloud_path,
@@ -95,6 +105,7 @@ def generate_point_cloud(scene_folder,
                         rgb_images[i],
                         float_depth_image,
                         calib_params.rgb_intrinsics,
+                        calib_params.rgb_distortion_coeffs,
                         calib_params.depth_intrinsics,
                         calib_params.depth_extrinsics,
                         point_cloud_path,
@@ -120,18 +131,7 @@ if __name__ == '__main__':
     parser.add_argument(
         '--dataset_folder', type=str, help="Path to the dataset root folder.")
     parser.add_argument(
-        '--use_only_boxes',
-        type=bool,
-        default=False,
-        help=("If this flag is set to True, depth from stereo will only be "
-              "computed for the box scenes."))
-    parser.add_argument(
         '--scene_folder', type=str, help="Path to the scene root folder.")
-    parser.add_argument(
-        '--log',
-        type=str,
-        default='CRITICAL',
-        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
     parser.add_argument(
         '--ps_calib_file',
         type=str,
@@ -151,21 +151,28 @@ if __name__ == '__main__':
         help=("Path to RealSense D435 calibration yaml file. By default: "
               "config/realsense_hd_d435.yaml"))
     parser.add_argument(
+        '--use_only_boxes',
+        action='store_true',
+        help=("If this flag is set, depth from stereo will only be computed "
+              "for the box scenes."))
+    parser.add_argument(
         '--use_stereo_depth',
-        type=bool,
-        default=False,
-        help=("If this flag is set to True, depth from stereo will be used"
+        action='store_true',
+        help=("If this flag is set, depth from stereo will be used "
               "for cloud generation"))
     parser.add_argument(
         '--save_depth_registered',
-        type=bool,
-        default=False,
-        help="If this flag is set to True, registered depth will be saved.")
+        action='store_true',
+        help="If this flag is set, registered depth will be saved.")
     parser.add_argument(
         '--save_point_clouds',
-        type=bool,
-        default=True,
-        help="If this flag is set to True, point clouds will be saved.")
+        action='store_true',
+        help="If this flag is set, point clouds will be saved.")
+    parser.add_argument(
+        '--log',
+        type=str,
+        default='CRITICAL',
+        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)
