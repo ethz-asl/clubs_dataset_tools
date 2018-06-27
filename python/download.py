@@ -23,7 +23,7 @@ def download_scene(scene_id, scene_type, output_dir):
     scene_file = os.path.join(output_dir, scene_type, scene_id)
     scene_zipfile = scene_file + '.zip'
     scene_dir = os.path.dirname(scene_file)
-    if not os.path.isfile(scene_file):
+    if not os.path.isdir(scene_file):
         if not os.path.exists(scene_dir):
             os.makedirs(scene_dir)
         print(scene_url + ' > ' + scene_zipfile)
@@ -33,7 +33,7 @@ def download_scene(scene_id, scene_type, output_dir):
         f.close()
         os.remove(scene_zipfile)
     else:
-        print('WARNING: skipping download of existing file ' + scene_file)
+        print('WARNING: skipping download of existing scene ' + scene_file)
 
 
 if __name__ == '__main__':
@@ -55,10 +55,21 @@ if __name__ == '__main__':
     if args.output_dir:
         output_dir = args.output_dir
     else:
-        output_dir = '.'
+        output_dir = ''
 
-    if args.scene and args.scene != 'ALL':
-        scene_id = args.scene
+    if args.scene.lower() == 'ALL'.lower():
+        for scene_id in object_scenes:
+            download_scene(scene_id, OBJECTS, output_dir)
+        for scene_id in box_scenes:
+            download_scene(scene_id, BOXES, output_dir)
+    elif args.scene.lower() == 'ALL_OBJECTS'.lower():
+        for scene_id in object_scenes:
+            download_scene(scene_id, OBJECTS, output_dir)
+    elif args.scene.lower() == 'ALL_BOXES'.lower():
+        for scene_id in box_scenes:
+            download_scene(scene_id, BOXES, output_dir)
+    elif args.scene:
+        scene_id = args.scene.lower()
         if scene_id in object_scenes:
             download_scene(scene_id, OBJECTS, output_dir)
         elif scene_id in box_scenes:
