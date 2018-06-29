@@ -2,7 +2,6 @@
 
 import argparse
 import os
-from pprint import pprint
 from tqdm import tqdm
 import urllib
 from zipfile import ZipFile
