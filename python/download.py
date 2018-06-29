@@ -2,18 +2,30 @@
 
 import argparse
 import os
-from tqdm import tqdm
 import urllib
 from zipfile import ZipFile
 
-BASE_URL = 'http://robotics.ethz.ch/~asl-datasets/ijrr_2018_clubs_dataset/'
+from tqdm import tqdm
+
+DATASET_URL = 'http://robotics.ethz.ch/~asl-datasets/ijrr_2018_clubs_dataset/'
 OBJECTS = 'object_scenes'
 BOXES = 'box_scenes'
 
 
-def get_scene_list(scene_type, output_dir):
-    scene_list_url = BASE_URL + scene_type + '.txt'
-    scene_list_file = os.path.join(output_dir, scene_type, scene_type + '.txt')
+def get_scene_list(scene_type, dataset_folder):
+        """
+        Function that fetches the list of object or box scene ids.
+
+        Input:
+            scene_type     - type of the scenes to list (OBJECTS or BOXES)
+            dataset_folder - path to the dataset root folder
+
+        Output:
+            scenes         - list of scene ids
+        """
+    scene_list_url = DATASET_URL + scene_type + '.txt'
+    scene_list_file = os.path.join(dataset_folder, scene_type,
+                                   scene_type + '.txt')
     scene_list_dir = os.path.dirname(scene_list_file)
     if not os.path.isfile(scene_list_file):
         if not os.path.exists(scene_list_dir):
@@ -25,15 +37,26 @@ def get_scene_list(scene_type, output_dir):
 
 
 class ProgressBar(tqdm):
+    """
+    Download progress bar based on tqdm.
+    """
     def update_to(self, b=1, bsize=1, tsize=None):
         if tsize is not None:
             self.total = tsize
         self.update(b * bsize - self.n)
 
 
-def download_scene(scene_id, scene_type, output_dir):
-    scene_url = BASE_URL + scene_type + '/' + scene_id + '.zip'
-    scene_dir = os.path.join(output_dir, scene_type, scene_id)
+def download_scene(scene_id, scene_type, dataset_folder):
+    """
+    Function that fetches the list of object or box scene ids.
+
+    Input:
+        scene_id       - id of the object or box scene to download
+        scene_type     - type of the scene to download (OBJECTS or BOXES)
+        dataset_folder - path to the dataset root folder
+    """
+    scene_url = DATASET_URL + scene_type + '/' + scene_id + '.zip'
+    scene_dir = os.path.join(dataset_folder, scene_type, scene_id)
     scene_zipfile = os.path.abspath(scene_dir + '.zip')
     if not os.path.isdir(scene_dir):
         with ProgressBar(
@@ -57,10 +80,10 @@ def download_scene(scene_id, scene_type, output_dir):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description=
-        ("Download the CLUBS dataset. Provide a specific object or box scene id, or download ALL object and box scenes, ALL_OBJECT scenes or ALL_BOXES scenes. The list of object and box scene ids can be printed with the --list_scenes flag."
+        ("Download the CLUBS dataset. Provide a specific object or box scene id, or download ALL_OBJECT scenes, ALL_BOXES scenes or ALL object and box scenes. The list of object and box scene ids can be printed with the --list_scenes flag."
          ))
     parser.add_argument(
-        '--output_dir',
+        '--dataset_folder',
         type=str,
         default='',
         help="Path to the CLUBS download directory.")
@@ -75,11 +98,10 @@ if __name__ == '__main__':
         '--list_scenes',
         action='store_true',
         help="List all object and box scene ids.")
-
     args = parser.parse_args()
 
-    object_scenes = get_scene_list(OBJECTS, args.output_dir)
-    box_scenes = get_scene_list(BOXES, args.output_dir)
+    object_scenes = get_scene_list(OBJECTS, args.dataset_folder)
+    box_scenes = get_scene_list(BOXES, args.dataset_folder)
 
     if args.list_scenes:
         print('\nOBJECT SCENES: ')
@@ -93,21 +115,21 @@ if __name__ == '__main__':
             'please delete partially downloaded scenes to re-download.\n'
         )
         for scene_id in object_scenes:
-            download_scene(scene_id, OBJECTS, args.output_dir)
+            download_scene(scene_id, OBJECTS, args.dataset_folder)
         for scene_id in box_scenes:
-            download_scene(scene_id, BOXES, args.output_dir)
+            download_scene(scene_id, BOXES, args.dataset_folder)
     elif args.scene.lower() == 'ALL_OBJECTS'.lower():
         for scene_id in object_scenes:
-            download_scene(scene_id, OBJECTS, args.output_dir)
+            download_scene(scene_id, OBJECTS, args.dataset_folder)
     elif args.scene.lower() == 'ALL_BOXES'.lower():
         for scene_id in box_scenes:
-            download_scene(scene_id, BOXES, args.output_dir)
+            download_scene(scene_id, BOXES, args.dataset_folder)
     elif args.scene:
         scene_id = args.scene.lower()
         if scene_id in object_scenes:
-            download_scene(scene_id, OBJECTS, args.output_dir)
+            download_scene(scene_id, OBJECTS, args.dataset_folder)
         elif scene_id in box_scenes:
-            download_scene(scene_id, BOXES, args.output_dir)
+            download_scene(scene_id, BOXES, args.dataset_folder)
         else:
             print('ERROR: Invalid scene id: ' + scene_id)
     else:
