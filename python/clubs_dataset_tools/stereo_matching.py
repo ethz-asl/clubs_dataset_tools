@@ -29,7 +29,7 @@ class StereoMatchingParams:
         self.speckle_window_size = 2048
         self.speckle_range = 1
         self.mode = cv2.StereoSGBM_MODE_HH4
-        self.apply_bilateral_filter = True
+        self.apply_bilateral_filter = False
         self.bilateral_filter_size = 21
         self.bilateral_filter_sigma = 30
         self.apply_wls_filter = False
@@ -44,8 +44,8 @@ class StereoMatchingParams:
             yaml_file - path to the yaml file containing the stereo parameters.
         """
 
-        log.debug(
-            "Initialized StereoMatchingParams from yaml file: " + yaml_file)
+        log.debug("Initialized StereoMatchingParams from yaml file: " +
+                  yaml_file)
 
         with open(yaml_file, 'r') as file_pointer:
             stereo_params = yaml.load(file_pointer)
@@ -85,6 +85,8 @@ def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
         rectified_r - rectified and undistorted right image
         Q - 4x4 perspective transformation matrix:
             [X Y Z W]^t = Q * [u v disp(u,v) 1]^t
+        RL - 3x3 rotation matrix of the rectified left image
+        PL - 3x4 new calibration matrix for left image
     """
 
     RL, RR, PL, PR, Q, valid_pix_ROI_l, valid_pix_ROI_r = cv2.stereoRectify(
@@ -117,7 +119,7 @@ def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
     log.debug("valid_pix_ROI_l:\n" + str(valid_pix_ROI_l))
     log.debug("valid_pix_ROI_r:\n" + str(valid_pix_ROI_r))
 
-    return rectified_l, rectified_r, Q
+    return rectified_l, rectified_r, Q, RL, PL
 
 
 def stereo_match(undistorted_rectified_l,
@@ -178,21 +180,22 @@ def stereo_match(undistorted_rectified_l,
 
     if stereo_params.apply_wls_filter:
         right_macher = cv2.StereoSGBM_create(
-            -(stereo_params.min_disparity + stereo_params.num_disparities) + 1,
-            stereo_params.num_disparities, stereo_params.block_size,
-            stereo_params.p1, stereo_params.p2, stereo_params.disp_12_max_diff,
-            stereo_params.pre_filter_cap, stereo_params.uniqueness_ratio,
+            -(stereo_params.min_disparity + stereo_params.num_disparities)
+            + 1, stereo_params.num_disparities, stereo_params.block_size,
+            stereo_params.p1, stereo_params.p2,
+            stereo_params.disp_12_max_diff, stereo_params.pre_filter_cap,
+            stereo_params.uniqueness_ratio,
             stereo_params.speckle_window_size, stereo_params.speckle_range,
             stereo_params.mode)
-        disparity_right = right_macher.compute(uint8_undistorted_rectified_r,
-                                               uint8_undistorted_rectified_l)
+        disparity_right = right_macher.compute(
+            uint8_undistorted_rectified_r, uint8_undistorted_rectified_l)
 
         wls_filter = cv2.ximgproc.createDisparityWLSFilter(stereo_matcher)
         wls_filter.setLambda(stereo_params.wls_filter_lambda)
         wls_filter.setSigmaColor(stereo_params.wls_filter_sigma_color)
         filtered_image = wls_filter.filter(
-            disparity, uint8_undistorted_rectified_l, None, disparity_right,
-            None, uint8_undistorted_rectified_r)
+            disparity, uint8_undistorted_rectified_l, None,
+            disparity_right, None, uint8_undistorted_rectified_r)
     else:
         filtered_image = disparity
 

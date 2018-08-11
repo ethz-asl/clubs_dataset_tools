@@ -67,7 +67,7 @@ def find_images_in_folder(image_folder, image_extension='.png'):
                 "It has the right extension, adding it to the image list")
             images.append(file)
 
-    return images
+    return sorted(images)
 
 
 def find_ir_image_folders(input_folder):
