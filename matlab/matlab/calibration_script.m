@@ -1,14 +1,13 @@
-
 % Parameters
 folders = {'../data/chameleon3/rgb_images'; ...
     '../data/primesense/rgb_images'; ...
-    '../data/primesense/ir_images'; ...
-    '../data/realsense_D415/rgb_images'; ...
-    '../data/realsense_D415/hd_ir_images'; ...
-    '../data/realsense_D415/hd_ir2_images'; ...
-    '../data/realsense_D435/rgb_images'; ...
-    '../data/realsense_D435/hd_ir_images'; ...
-    '../data/realsense_D435/hd_ir2_images'};
+    '../data/primesense/ir1_images'; ...
+    '../data/realsense_d415/rgb_images'; ...
+    '../data/realsense_d415/ir1_images'; ...
+    '../data/realsense_d415/ir2_images'; ...
+    '../data/realsense_d435/rgb_images'; ...
+    '../data/realsense_d435/ir1_images'; ...
+    '../data/realsense_d435/ir2_images'};
 cameraNames = {'chameleon_rgb', ...
                'primesense_rgb', ...
                'primesense_ir', ...
@@ -42,9 +41,9 @@ displayReprojectionError = false;
 displayExtrinsics = false;
 removeOutliers = true;
 increaseBrightnessOfIRImage = false;
-shell_path = '~/.zshrc';
-hand_eye_calibration_workspace = '~/sandbox_catkin_ws/devel/setup.zsh';
-hand_eye_calibration_path = '~/sandbox_catkin_ws/src/hand_eye_calibration/hand_eye_calibration/bin';
+shellPath = '~/.zshrc';
+handEyeCalibrationWorkspace = '~/sandbox_catkin_ws/devel/setup.zsh';
+handEyeCalibrationPath = '~/sandbox_catkin_ws/src/hand_eye_calibration/hand_eye_calibration/bin';
 
 
 % Get all the image locations.
@@ -59,9 +58,9 @@ end
 
 % Increase brighntess of primesense IR image.
 if increaseBrightnessOfIRImage
-    % TODO(ntonci): Make sure that ps_ir camera index is correct!
-    brightness_increase_factor = 150;
-    increaseBrightnessIRImages(imageLocationArray{3}, brightness_increase_factor);
+    disp('WARNING: Only increase brightness once in the beginning!')
+    brightnessIncreaseFactor = 150;
+    increaseBrightnessIRImages(imageLocationArray{3}, brightnessIncreaseFactor);
 end
 
 
@@ -95,7 +94,7 @@ while iCam <= numberOfCameras
         displayExtrinsics, removeOutliers, iCam);
 
     % Remove outliers
-    % TODO(ntonci): Set max number of iterations for outliers.
+    maxIterations = 5;
     if sum(imagesToUse{iCam}==0) > 0
         disp(['Have outliers in iteration ' num2str(iteration) ', error is ' ...
             num2str(calibrationParameters{iCam}.MeanReprojectionError)]);
@@ -111,6 +110,12 @@ while iCam <= numberOfCameras
         imagePointsArray{iCam}(:,:,idxToRemove) = [];
         imagesUsedLocation{iCam}(idxToRemove) = [];
         iteration = iteration + 1;
+        
+        if iteration > maxIterations
+            disp('Reached maximum number of iterations for outlier rejection.')
+            iCam = iCam + 1;
+            iteration = 0;
+        end
     else
         disp(['No more outliers after iteration ' num2str(iteration) ', error is ' ...
             num2str(calibrationParameters{iCam}.MeanReprojectionError)]);
@@ -146,7 +151,7 @@ end
 
 
 % Output Hand-Eye calibration poses for all the cameras.
-disp(['Outputing hand-eye calibration data for all cameras ...']);
+disp('Outputing hand-eye calibration data for all cameras ...');
 createHandEyeDataAll ('../data/poses.csv', imagesUsedArray, calibrationParameters, ...
     '../results/all/', 9);
 
@@ -158,11 +163,15 @@ save('../results/extrinsicsCalibrationParameters.mat', 'extrinsicsCalibrationPar
 for iCam = 1 : numberOfCameras
     disp(['Performing hand-eye calibration for camera ' num2str(iCam) ' ...']);
     path = '../results/cam';
-    command = strcat({'source ./../scripts/hand_eye_calib.sh '}, shell_path, {' '}, ...
-        hand_eye_calibration_workspace, {' '}, hand_eye_calibration_path, {' '}, ...
+    command = strcat({'source ./../scripts/hand_eye_calib.sh '}, shellPath, {' '}, ...
+        handEyeCalibrationWorkspace, {' '}, handEyeCalibrationPath, {' '}, ...
         path, num2str(iCam), {'/'}, {'robot_poses.csv'}, {' '}, path, num2str(iCam), {'/'}, ...
         {'camera_poses.csv'}, {' '}, path, num2str(iCam), {'/'}, {'h_e_calib.json'});
     [status,cmdout] = system(command{1});
+    location = strfind(cmdout,'Solution found with sample:');
+    if (~isempty(location))
+        cmdout = eraseBetween(cmdout,1,location-1);
+    end
     location = strfind(cmdout,'Number of inliers:');
     disp(cmdout(location(end):location(end)+20));
     location = strfind(cmdout,'RMSE position:');
@@ -176,12 +185,10 @@ end
 
 % Export yaml files.
 staticTransformID = fopen('../results/static_transform_extrinsics.yaml', 'w');
-fprintf(staticTransformID, '%s\n', '%YAML:1.0=');
 for currentSet = 1 : size(exportSet, 1)
     disp(['Writing out yaml files for ', cameraSets{currentSet}]);
     iCams =  exportSet(currentSet, :);
     fileID = fopen(['../results/' cameraSets{currentSet} '.yaml'],'w');
-    fprintf(fileID, '%s\n', '%YAML:1.0=');
     for iCam = 1 : length(iCams)
         if (iCams(iCam) == 0)
             break;
@@ -190,16 +197,16 @@ for currentSet = 1 : size(exportSet, 1)
         if (iCam == 1)
             handEyeFileID = fopen(['../results/cam' num2str(iCams(iCam)) ...
             '/h_e_calib.json']);
-            C = textscan(handEyeFileID,'%s');
+            handEyeTransform = textscan(handEyeFileID,'%s');
             fclose(handEyeFileID);
 
-            qx = str2double(C{1}{7}(1:end-1));
-            qy = str2double(C{1}{9}(1:end-1));
-            qz = str2double(C{1}{11}(1:end-1));
-            qw = str2double(C{1}{13});
-            x = str2double(C{1}{18}(1:end-1));
-            y = str2double(C{1}{20}(1:end-1));
-            z = str2double(C{1}{22});
+            qx = str2double(handEyeTransform{1}{7}(1:end-1));
+            qy = str2double(handEyeTransform{1}{9}(1:end-1));
+            qz = str2double(handEyeTransform{1}{11}(1:end-1));
+            qw = str2double(handEyeTransform{1}{13});
+            x = str2double(handEyeTransform{1}{18}(1:end-1));
+            y = str2double(handEyeTransform{1}{20}(1:end-1));
+            z = str2double(handEyeTransform{1}{22});
 
             extrinsics = eye(4);
             extrinsics(1:3, 1:3) = quat2rotm([qw, qx, qy, qz]);
@@ -213,11 +220,13 @@ for currentSet = 1 : size(exportSet, 1)
                 calibrationParameters{iCams(iCam)}.TangentialDistortion, ...
                 extrinsics, 'rgb');
 
-            % TODO(ntonci): Generalize.
             if (iCams(iCam) == 1)
                 fprintf(staticTransformID, '%s: ', 'ee_chameleon');
                 fprintf(staticTransformID, '%4.12f, %4.12f, %4.12f, %4.12f, %4.12f, %4.12f, %4.12f\n', ...
                 x, y, z, qx, qy, qz, qw);
+                saveToYamlFile (fileID, [0, 0], [0, 0], [0, 0, 0], [0, 0], eye(4), 'depth');
+                saveToYamlFile (fileID, [0, 0], [0, 0], [0, 0, 0], [0, 0], eye(4), 'ir1');
+                saveToYamlFile (fileID, [0, 0], [0, 0], [0, 0, 0], [0, 0], eye(4), 'ir2');
                 fprintf(fileID, '%s %d\n', 'rgb_width:', 2048);
                 fprintf(fileID, '%s %d\n', 'rgb_height:', 1536);
                 fprintf(fileID, '%s %d\n', 'depth_width:', 0);
@@ -240,7 +249,6 @@ for currentSet = 1 : size(exportSet, 1)
             end
         end
         if (iCam == 2)
-            % TODO(ntonci): Generalize.
             if (currentSet == 2)
                 rotation = extrinsicsCalibrationParameters{1}.RotationOfCamera2;
                 translation = extrinsicsCalibrationParameters{1}.TranslationOfCamera2;
@@ -262,17 +270,22 @@ for currentSet = 1 : size(exportSet, 1)
 
             saveToYamlFile (fileID, calibrationParameters{iCams(iCam)}.FocalLength, ...
                 calibrationParameters{iCams(iCam)}.PrincipalPoint, ...
+                [0, 0, 0], [0, 0], ...
+                extrinsics, 'depth');
+            
+            saveToYamlFile (fileID, calibrationParameters{iCams(iCam)}.FocalLength, ...
+                calibrationParameters{iCams(iCam)}.PrincipalPoint, ...
                 calibrationParameters{iCams(iCam)}.RadialDistortion, ...
                 calibrationParameters{iCams(iCam)}.TangentialDistortion, ...
-                extrinsics, 'depth');
+                extrinsics, 'ir1');
 
-            % TODO(ntonci): Generalize.
             if (iCams(iCam) == 3)
                 quaternion = rotm2quat(rotation');
                 fprintf(staticTransformID, '%s: ', 'primesense_ir_to_rgb');
                 fprintf(staticTransformID, '%4.12f, %4.12f, %4.12f, %4.12f, %4.12f, %4.12f, %4.12f\n', ...
                 extrinsics(1,4), extrinsics(2,4), extrinsics(3,4), ...
                 quaternion(2), quaternion(3), quaternion(4), quaternion(1));
+                saveToYamlFile (fileID, [0, 0], [0, 0], [0, 0, 0], [0, 0], eye(4), 'ir2');
                 fprintf(fileID, '%s %d\n', 'rgb_width:', 640);
                 fprintf(fileID, '%s %d\n', 'rgb_height:', 480);
                 fprintf(fileID, '%s %d\n', 'depth_width:', 640);
@@ -294,7 +307,6 @@ for currentSet = 1 : size(exportSet, 1)
             end
         end
         if (iCam == 3)
-            % TODO(ntonci): Generalize.
             if (currentSet == 3)
                 rotation = extrinsicsCalibrationParameters{2}.RotationOfCamera2;
                 translation = extrinsicsCalibrationParameters{2}.TranslationOfCamera2;
@@ -314,9 +326,8 @@ for currentSet = 1 : size(exportSet, 1)
                 calibrationParameters{iCams(iCam)}.PrincipalPoint, ...
                 calibrationParameters{iCams(iCam)}.RadialDistortion, ...
                 calibrationParameters{iCams(iCam)}.TangentialDistortion, ...
-                extrinsics, 'ir');
+                extrinsics, 'ir2');
 
-            % TODO(ntonci): Generalize.
             if (iCams(iCam) == 6)
                 quaternion = rotm2quat(rotation');
                 fprintf(staticTransformID, '%s: ', 'd415_ir2_to_ir1');
@@ -331,6 +342,7 @@ for currentSet = 1 : size(exportSet, 1)
                 extrinsics(1,4), extrinsics(2,4), extrinsics(3,4), ...
                 quaternion(2), quaternion(3), quaternion(4), quaternion(1));
             end
+           
             fprintf(fileID, '%s %d\n', 'rgb_width:', 1920);
             fprintf(fileID, '%s %d\n', 'rgb_height:', 1080);
             fprintf(fileID, '%s %d\n', 'depth_width:', 1280);
@@ -342,11 +354,21 @@ for currentSet = 1 : size(exportSet, 1)
     fprintf(fileID, '%s %s\n', 'sensor_name:', ['"' cameraSets{currentSet} '"']);
     fprintf(fileID, '%s %s\n', 'serial_number:', ['"' 'n/a' '"']);
     fprintf(fileID, '%s %s\n', 'robot_name:', ['"' 'ur10' '"']);
-    fprintf(fileID, '%s %f\n', 'z_scaling:', 1.0);
-    fprintf(fileID, '%s %f\n', 'depth_scale_mm:', 1.0);
+    if strcmp(cameraSets{currentSet},'primesense')
+        fprintf(fileID, '%s %f\n', 'z_scaling:', 1.0325);
+    else
+        fprintf(fileID, '%s %f\n', 'z_scaling:', 1.0);
+    end
+    if strcmp(cameraSets{currentSet}, 'primesense')
+        fprintf(fileID, '%s %f\n', 'depth_scale_mm:', 1.0);
+    elseif strcmp(cameraSets{currentSet}, 'chameleon')
+        fprintf(fileID, '%s %f\n', 'depth_scale_mm:', 0.0);
+    else
+        fprintf(fileID, '%s %f\n', 'depth_scale_mm:', 0.1);
+    end
     fclose(fileID);
 end
-% TODO(ntonci): Generalize.
+
 for iCam = 6:8
     rotation = extrinsicsCalibrationParameters{iCam}.RotationOfCamera2;
     translation = extrinsicsCalibrationParameters{iCam}.TranslationOfCamera2;
@@ -365,5 +387,3 @@ for iCam = 6:8
     quaternion(2), quaternion(3), quaternion(4), quaternion(1));
 end
 fclose(staticTransformID);
-
-% TODO(ntonci): Display extrinsics from calibration

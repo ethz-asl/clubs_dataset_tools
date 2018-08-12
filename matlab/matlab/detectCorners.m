@@ -12,9 +12,9 @@ function [imagePointsArray, boardSizeArray, imagesUsedArray] = detectCorners (im
             subplot(subplotY, subplotX, i);
             imshow(I);
             hold on;
-            parsed_path = strsplit(imageLocationArray{i},'/');
-            parsed_path = strsplit(parsed_path{end}, '.');
-            title(parsed_path{1})
+            parsedPath = strsplit(imageLocationArray{i},'/');
+            parsedPath = strsplit(parsedPath{end}, '.');
+            title(parsedPath{1})
             if imagesUsedArray(i)
                 plot(imagePointsArray(:,1,counter),imagePointsArray(:,2,counter),'ro');
                 counter = counter + 1;

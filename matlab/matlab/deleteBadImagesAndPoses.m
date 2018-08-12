@@ -1,21 +1,21 @@
-function deleteBadImagesAndPoses (images_used_array, image_location_array, poses_file, nCam) 
+function deleteBadImagesAndPoses (imagesUsedArray, imageLocationArray, posesFile, nCam) 
     poses = readtable(poses_file);
 
-    used_images = cat(2,images_used_array{:});
-    used_by_all = min(used_images,[],2);
-    not_used_indices = find(used_by_all==0);
+    usedImages = cat(2,imagesUsedArray{:});
+    usedByAll = min(usedImages,[],2);
+    notUsedIndices = find(usedByAll==0);
      
     for iCam = 1 : nCam
-        all_names = image_location_array{iCam};
-        names_not_used = all_names(not_used_indices);
-        for i = 1 : length(names_not_used)
-            disp(names_not_used{i})
-            delete(names_not_used{i})
+        allNames = imageLocationArray{iCam};
+        namesNotUsed = allNames(notUsedIndices);
+        for i = 1 : length(namesNotUsed)
+            disp(namesNotUsed{i})
+            delete(namesNotUsed{i})
         end
     end
     
-    poses(not_used_indices,:) = [];
+    poses(notUsedIndices,:) = [];
     
     % TODO(ntonci): Remove variable name
-    writetable(poses, poses_file);
+    writetable(poses, posesFile);
 end
