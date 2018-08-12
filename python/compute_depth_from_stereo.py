@@ -92,7 +92,7 @@ if __name__ == '__main__':
             "depth image. There are two different ways this function can be "
             "called. First one is by passing in the dataset root folder "
             "(flag --dataset_folder) which will create a new folder for each "
-            "object/scene and each sensor (d415 and d435), containing the "
+            "object/box scene and each sensor (d415 and d435), containing the "
             "depth image obtained through stereo matching. Second way is to "
             "pass object/box scene root folder (flag --scene_folder) which "
             "will do the same for that specific scene."))

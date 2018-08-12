@@ -67,7 +67,7 @@ def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
                    camera_matrix_r, dist_coeffs_r, extrinsics_r, extrinsics_t):
     """
     Function that takes in left and right image, together with their
-    intirinsic and extrinsic parameters and returns rectified and
+    intrinsic and extrinsic parameters and returns rectified and
     undistorted images and Q matrix that maps disparity image to 3D.
 
     Input:
