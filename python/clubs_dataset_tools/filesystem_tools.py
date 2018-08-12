@@ -9,7 +9,7 @@ import glob
 
 def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):
     """
-    Function that reads all the images form the folder.
+    Function that reads all the images from a list of file paths.
 
     Input:
         image_files - list containing image full paths
@@ -194,8 +194,8 @@ def find_all_folders(dataset_folder):
 
     folders_objects = glob.glob(dataset_folder + '/object_scenes/' +
                                 '[0-9]' * 3 + '_' + '[0-9]' * 1 + '_' + '*')
-    log.debug(
-        "Found following object scene folders: \n" + str(folders_objects))
+    log.debug("Found following object scene folders: \n" +
+              str(folders_objects))
 
     folders_boxes = glob.glob(dataset_folder + '/box_scenes/box' + '_' +
                               '[0-9]' * 3 + '_' + '[0-9]' * 3)

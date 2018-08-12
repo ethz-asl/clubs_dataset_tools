@@ -49,8 +49,8 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
         ir_left = read_images(image_paths_left)
         ir_right = read_images(image_paths_right)
 
-        stereo_depth_folder = create_stereo_depth_folder(
-            scene_folder + sensor_folder[2])
+        stereo_depth_folder = create_stereo_depth_folder(scene_folder +
+                                                         sensor_folder[2])
 
         stereo_bar = tqdm(total=len(ir_left), desc="Stereo Matching Progress")
         for i in range(len(ir_left)):
@@ -68,8 +68,9 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
                 calib_params.camera_matrix_l[0, 0],
                 stereo_params,
                 scale=10000)
-            cv2.imwrite(stereo_depth_folder + '/' + timestamps[i] +
-                        '_depth_images.png', depth_uint)
+            cv2.imwrite(
+                stereo_depth_folder + '/' + timestamps[i] +
+                '_depth_images.png', depth_uint)
             stereo_bar.update()
         stereo_bar.close()
     else:
@@ -83,8 +84,8 @@ if __name__ == '__main__':
          "depth image. There are three different ways this function can be "
          "called. First one is by passing in the dataset root folder "
          "(flag --dataset_folder) which will create a new folder for each "
-         "object/scene and each sensor (d415 and d435), containing the depth "
-         "image obtained through stereo matching. Second way is to pass "
+         "object/box scene and each sensor (d415 and d435), containing the "
+         "depth image obtained through stereo matching. Second way is to pass "
          "object/box scene root folder (flag --scene_folder) which will do "
          "the same for that specific scene. Last way is to directly pass in "
          "the right and left image (flags --left_image and --right_image) "

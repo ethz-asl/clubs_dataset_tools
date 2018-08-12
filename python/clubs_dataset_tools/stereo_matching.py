@@ -41,7 +41,7 @@ class CalibrationParams:
 
     def read_from_yaml(self, yaml_file):
         """
-        Function that read the calibration parameters from the yaml file.
+        Function that reads the calibration parameters from the yaml file.
 
         Input:
             yaml_file - path to the yaml file containing the calibration
@@ -87,14 +87,14 @@ class StereoMatchingParams:
 
     def read_from_yaml(self, yaml_file):
         """
-        Function that read the stereo parameters from the yaml file.
+        Function that reads the stereo parameters from the yaml file.
 
         Input:
             yaml_file - path to the yaml file containing the stereo parameters.
         """
 
-        log.debug(
-            "Initialized StereoMatchingParams from yaml file: " + yaml_file)
+        log.debug("Initialized StereoMatchingParams from yaml file: " +
+                  yaml_file)
 
         with open(yaml_file, 'r') as file_pointer:
             stereo_params = yaml.load(file_pointer)
@@ -116,7 +116,7 @@ def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
                    camera_matrix_r, dist_coeffs_r, extrinsics_r, extrinsics_t):
     """
     Function that takes in left and right image, together with their
-    intirinsic and extrinsic parameters and returns rectified and
+    intrinsic and extrinsic parameters and returns rectified and
     undistorted images and Q matrix that maps disparity image to 3D.
 
     Input:
