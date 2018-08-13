@@ -55,8 +55,8 @@ def generate_point_cloud(scene_folder,
         depth_images = read_images(image_paths_depth, image_type=cv2.CV_16UC1)
 
         if save_point_clouds:
-            point_cloud_folder = create_point_cloud_folder(
-                scene_folder + sensor_folder[2])
+            point_cloud_folder = create_point_cloud_folder(scene_folder +
+                                                           sensor_folder[2])
         if save_depth_registered:
             depth_registered_folder = create_depth_registered_folder(
                 scene_folder + sensor_folder[2])
@@ -141,15 +141,15 @@ if __name__ == '__main__':
     parser.add_argument(
         '--d415_calib_file',
         type=str,
-        default='config/realsense_hd_d415.yaml',
+        default='config/realsense_d415_device_depth.yaml',
         help=("Path to RealSense D415 calibration yaml file. By default: "
-              "config/realsense_hd_d415.yaml"))
+              "config/realsense_d415_device_depth.yaml"))
     parser.add_argument(
         '--d435_calib_file',
         type=str,
-        default='config/realsense_hd_d435.yaml',
+        default='config/realsense_d435_device_depth.yaml',
         help=("Path to RealSense D435 calibration yaml file. By default: "
-              "config/realsense_hd_d435.yaml"))
+              "config/realsense_d435_device_depth.yaml"))
     parser.add_argument(
         '--use_only_boxes',
         action='store_true',
@@ -159,7 +159,8 @@ if __name__ == '__main__':
         '--use_stereo_depth',
         action='store_true',
         help=("If this flag is set, depth from stereo will be used "
-              "for cloud generation"))
+              "for cloud generation. Make sure to pass in the correct "
+              "calibration file."))
     parser.add_argument(
         '--save_depth_registered',
         action='store_true',

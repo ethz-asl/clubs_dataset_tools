@@ -103,15 +103,15 @@ if __name__ == '__main__':
     parser.add_argument(
         '--d415_calib_file',
         type=str,
-        default='config/realsense_hd_d415.yaml',
+        default='config/realsense_d415_stereo_depth.yaml',
         help=("Path to RealSense D415 calibration yaml file. By default: "
-              "config/realsense_hd_d415.yaml"))
+              "config/realsense_d415_stereo_depth.yaml"))
     parser.add_argument(
         '--d435_calib_file',
         type=str,
-        default='config/realsense_hd_d435.yaml',
+        default='config/realsense_d435_stereo_depth.yaml',
         help=("Path to RealSense D435 calibration yaml file. By default: "
-              "config/realsense_hd_d435.yaml"))
+              "config/realsense_d435_stereo_depth.yaml"))
     parser.add_argument(
         '--stereo_params_file',
         type=str,
