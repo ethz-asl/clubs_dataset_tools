@@ -45,6 +45,18 @@ shellPath = '~/.zshrc';
 handEyeCalibrationWorkspace = '~/sandbox_catkin_ws/devel/setup.zsh';
 handEyeCalibrationPath = '~/sandbox_catkin_ws/src/hand_eye_calibration/hand_eye_calibration/bin';
 
+if exist(shellPath, 'file') ~= 2
+    disp('PLEASE SPECIFY YOUR SHELL PATH IF YOU WANT TO USE HAND_EYE_CALIBRATION!');
+    return;
+end
+if exist(handEyeCalibrationWorkspace, 'file') ~= 2
+    disp('PLEASE SPECIFY YOUR CATKIN WORKSPACE .bash FILE IF YOU WANT TO USE HAND_EYE_CALIBRATION!');
+    return;
+end
+if exist(handEyeCalibrationPath, 'file') ~= 7
+    disp('PLEASE SPECIFY PATH TO YOUR HAND_EYE_CALIBRATION BINARY FOLDER IF YOU WANT TO USE IT!');
+    return;
+end
 
 % Get all the image locations.
 imageFolderArray = {};
