@@ -186,22 +186,21 @@ def stereo_match(undistorted_rectified_l,
 
     if stereo_params.apply_wls_filter:
         right_macher = cv2.StereoSGBM_create(
-            -(stereo_params.min_disparity + stereo_params.num_disparities)
-            + 1, stereo_params.num_disparities, stereo_params.block_size,
-            stereo_params.p1, stereo_params.p2,
-            stereo_params.disp_12_max_diff, stereo_params.pre_filter_cap,
-            stereo_params.uniqueness_ratio,
+            -(stereo_params.min_disparity + stereo_params.num_disparities) + 1,
+            stereo_params.num_disparities, stereo_params.block_size,
+            stereo_params.p1, stereo_params.p2, stereo_params.disp_12_max_diff,
+            stereo_params.pre_filter_cap, stereo_params.uniqueness_ratio,
             stereo_params.speckle_window_size, stereo_params.speckle_range,
             stereo_params.mode)
-        disparity_right = right_macher.compute(
-            uint8_undistorted_rectified_r, uint8_undistorted_rectified_l)
+        disparity_right = right_macher.compute(uint8_undistorted_rectified_r,
+                                               uint8_undistorted_rectified_l)
 
         wls_filter = cv2.ximgproc.createDisparityWLSFilter(stereo_matcher)
         wls_filter.setLambda(stereo_params.wls_filter_lambda)
         wls_filter.setSigmaColor(stereo_params.wls_filter_sigma_color)
         filtered_image = wls_filter.filter(
-            disparity, uint8_undistorted_rectified_l, None,
-            disparity_right, None, uint8_undistorted_rectified_r)
+            disparity, uint8_undistorted_rectified_l, None, disparity_right,
+            None, uint8_undistorted_rectified_r)
     else:
         filtered_image = disparity
 
@@ -213,6 +212,9 @@ def stereo_match(undistorted_rectified_l,
             stereo_params.bilateral_filter_sigma)
 
     depth_float = baseline * focal_length / disparity_float
+
+    depth_float[depth_float <= 0] = float('nan')
+    depth_float[depth_float == np.amax(depth_float)] = float('nan')
 
     depth_uint = depth_float * scale
     depth_uint = depth_uint.astype(np.uint16)

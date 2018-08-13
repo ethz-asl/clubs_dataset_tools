@@ -46,7 +46,8 @@ def convert_depth_uint_to_float(uint_depth_image,
     log.debug(("Converting uint depth to float and applying z_scaling and "
                "depth_scaling"))
 
-    return (uint_depth_image / 1000 * depth_scale_mm * z_scaling).astype(float)
+    return (
+        uint_depth_image / 1000 * depth_scale_mm * z_scaling).astype('float')
 
 
 def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
