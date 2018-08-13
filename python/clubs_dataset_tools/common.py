@@ -17,67 +17,34 @@ class CalibrationParams:
         Constructor for the CalibrationParams.
         """
 
-        log.debug("Initialized CalibrationParams with default values.")
+        log.debug("Initialized an empty CalibrationParams class.")
 
-        self.rgb_intrinsics = np.array(
-            [[1374.858, 0.000, 948.552],
-             [0.000, 1373.845, 541.477],
-             [0.000, 0.000, 1.000]])
-        self.rgb_distortion_coeffs = np.array([
-            0.135775752283, -0.418056082917, 0.000556837458, 0.000123527682,
-            0.332401963670])
-        self.hand_eye_transform = np.array([[
-            -0.000529077278, 0.024926402044, 0.999689148965, 0.047041508000],
-            [-0.001915414986, -0.999687480304, 0.024925346720, 0.021963094613],
-            [0.999998025629, -0.001901632142, 0.000576656335, -0.034869255532],
-            [0.000000000000, 0.000000000000, 0.000000000000, 1.000000000000]])
-        self.depth_intrinsics = np.array(
-            [[946.041, 0.000, 633.883],
-             [0.000, 946.041, 370.771],
-             [0.000, 0.000, 1.000]])
-        self.depth_distortion_coeffs = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
-        self.depth_extrinsics = np.array([[
-            0.999987510895, 0.003531992676, 0.003535969669, 0.014944465045],
-            [-0.003538921961, 0.999991826342, 0.001955320976, -0.000049816138],
-            [-0.003529034587, -0.001967810077, 0.999991836786, 0.000086832557],
-            [0.000000000000, 0.000000000000, 0.000000000000, 1.000000000000]])
-        self.ir1_intrinsics = np.array([[1387.426, 0.000, 969.672],
-                                        [0.000, 1386.698, 559.111],
-                                        [0.000, 0.000, 1.000]])
-        self.ir1_distortion_coeffs = np.array([
-            0.126991973128, -0.351631362871, 0.000823677750, 0.000733769806,
-            0.250226895328])
-        self.ir2_intrinsics = np.array([[1387.668, 0.000, 953.792],
-                                        [0.000, 1387.664, 553.310],
-                                        [0.000, 0.000, 1.000]])
-        self.ir2_distortion_coeffs = np.array([
-            0.128268524583, -0.368150717004, -0.000893114163, 0.001179459198,
-            0.284531882325])
-        self.ir_extrinsics = np.array([[
-            0.999986135126, -0.001239001799, 0.005118049425, 0.055080948077],
-            [0.001257242440, 0.999992864639, -0.003562304364, 0.000113632506],
-            [-0.005113599205, 0.003568689602, 0.999980557590, 0.000212769671],
-            [0.000000000000, 0.000000000000, 0.000000000000, 1.000000000000]])
-        self.extrinsics_r = np.array(
-            [[0.999986130, 0.00125724064, -0.00511359975],
-             [-0.00123899938, 0.999992869, 0.00356868523],
-             [0.00511805018, -0.00356230478, 0.999980555]])
-        self.extrinsics_t = np.array(
-            [-0.0550792390, -0.0000461457433, -0.000494267796])
-        self.rgb_width = 1920
-        self.rgb_height = 1080
-        self.depth_width = 1280
-        self.depth_height = 720
-        self.z_scaling = 1.000000
-        self.depth_scale_mm = 0.100000
-
+        self.rgb_intrinsics = np.array([])
+        self.rgb_distortion_coeffs = np.array([])
+        self.hand_eye_transform = np.array([])
+        self.depth_intrinsics = np.array([])
+        self.depth_distortion_coeffs = np.array([])
+        self.depth_extrinsics = np.array([])
+        self.ir1_intrinsics = np.array([])
+        self.ir1_distortion_coeffs = np.array([])
+        self.ir2_intrinsics = np.array([])
+        self.ir2_distortion_coeffs = np.array([])
+        self.ir_extrinsics = np.array([])
+        self.extrinsics_r = np.array([])
+        self.extrinsics_t = np.array([])
+        self.rgb_width = 0.0
+        self.rgb_height = 0.0
+        self.depth_width = 0.0
+        self.depth_height = 0.0
+        self.z_scaling = 0.0
+        self.depth_scale_mm = 0.0
 
     def read_from_yaml(self, yaml_file):
         """
         Function that reads the calibration parameters from the yaml file.
 
         Input:
-            yaml_file - path to the yaml file containing the calibration
+            yaml_file - Path to the yaml file containing the calibration
             parameters.
         """
 
@@ -86,24 +53,53 @@ class CalibrationParams:
         with open(yaml_file, 'r') as file_pointer:
             calibration_params = yaml.load(file_pointer)
 
-        self.rgb_intrinsics = np.array(calibration_params['rgb_intrinsics'])
+        raw_rgb_intrinsics = calibration_params['rgb_intrinsics']
+        self.rgb_intrinsics = np.array(
+            np.reshape(
+                raw_rgb_intrinsics['data'],
+                (raw_rgb_intrinsics['rows'], raw_rgb_intrinsics['cols'])))
+        raw_rgb_distortion_coeffs = calibration_params['rgb_distortion_coeffs']
         self.rgb_distortion_coeffs = np.array(
-            calibration_params['rgb_distortion_coeffs'])
+            raw_rgb_distortion_coeffs['data'])
+        raw_hand_eye_transform = calibration_params['hand_eye_transform']
         self.hand_eye_transform = np.array(
-            calibration_params['hand_eye_transform'])
+            np.reshape(raw_hand_eye_transform['data'],
+                       (raw_hand_eye_transform['rows'],
+                        raw_hand_eye_transform['cols'])))
+        raw_depth_intrinsics = calibration_params['depth_intrinsics']
         self.depth_intrinsics = np.array(
-            calibration_params['depth_intrinsics'])
+            np.reshape(
+                raw_depth_intrinsics['data'],
+                (raw_depth_intrinsics['rows'], raw_depth_intrinsics['cols'])))
+        raw_depth_distortion_coeffs = calibration_params[
+            'depth_distortion_coeffs']
         self.depth_distortion_coeffs = np.array(
-            calibration_params['depth_distortion_coeffs'])
+            raw_depth_distortion_coeffs['data'])
+        raw_depth_extrinsics = calibration_params['depth_extrinsics']
         self.depth_extrinsics = np.array(
-            calibration_params['depth_extrinsics'])
-        self.ir1_intrinsics = np.array(calibration_params['ir1_intrinsics'])
+            np.reshape(
+                raw_depth_extrinsics['data'],
+                (raw_depth_extrinsics['rows'], raw_depth_extrinsics['cols'])))
+        raw_ir1_intrinsics = calibration_params['ir1_intrinsics']
+        self.ir1_intrinsics = np.array(
+            np.reshape(
+                raw_ir1_intrinsics['data'],
+                (raw_ir1_intrinsics['rows'], raw_ir1_intrinsics['cols'])))
+        raw_ir1_distortion_coeffs = calibration_params['ir1_distortion_coeffs']
         self.ir1_distortion_coeffs = np.array(
-            calibration_params['ir1_distortion_coeffs'])
-        self.ir2_intrinsics = np.array(calibration_params['ir2_intrinsics'])
+            raw_ir1_distortion_coeffs['data'])
+        raw_ir2_intrinsics = calibration_params['ir2_intrinsics']
+        self.ir2_intrinsics = np.array(
+            np.reshape(
+                raw_ir2_intrinsics['data'],
+                (raw_ir2_intrinsics['rows'], raw_ir2_intrinsics['cols'])))
+        raw_ir2_distortion_coeffs = calibration_params['ir2_distortion_coeffs']
         self.ir2_distortion_coeffs = np.array(
-            calibration_params['ir2_distortion_coeffs'])
-        self.ir_extrinsics = np.array(calibration_params['ir_extrinsics'])
+            raw_ir2_distortion_coeffs['data'])
+        raw_ir_extrinsics = calibration_params['ir_extrinsics']
+        self.ir_extrinsics = np.array(
+            np.reshape(raw_ir_extrinsics['data'],
+                       (raw_ir_extrinsics['rows'], raw_ir_extrinsics['cols'])))
 
         inv_extrinsics = np.linalg.inv(self.ir_extrinsics)
 

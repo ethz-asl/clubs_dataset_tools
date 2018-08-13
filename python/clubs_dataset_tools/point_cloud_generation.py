@@ -33,9 +33,9 @@ def convert_depth_uint_to_float(uint_depth_image,
     depth scale and z_scaling.
 
     Input:
-        uint_depth_image - depth image of type uint16
+        uint_depth_image - Depth image of type uint16
         z_scaling - correction for z values to correspond to true metric values
-        depth_scale_mm - conversion factor for depth (e.g. 1 means that value
+        depth_scale_mm - Conversion factor for depth (e.g. 1 means that value
         of 1000 in uint16 depth image corresponds to 1.0 in float depth image
         and to 1m in real world)
 
@@ -46,7 +46,8 @@ def convert_depth_uint_to_float(uint_depth_image,
     log.debug(("Converting uint depth to float and applying z_scaling and "
                "depth_scaling"))
 
-    return (uint_depth_image / 1000 * depth_scale_mm * z_scaling).astype(float)
+    return (
+        uint_depth_image / 1000 * depth_scale_mm * z_scaling).astype('float')
 
 
 def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
@@ -55,8 +56,8 @@ def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
     depth scale.
 
     Input:
-        float_depth_image - depth image of type float
-        depth_scale_mm - conversion factor for depth (e.g. 1 means that value
+        float_depth_image - Depth image of type float
+        depth_scale_mm - Conversion factor for depth (e.g. 1 means that value
         of 1000 in uint16 depth image corresponds to 1m)
 
     Output:
@@ -76,24 +77,24 @@ def save_register_depth_image(float_depth_image,
                               registered_depth_path,
                               depth_scale_mm=1.0):
     """
-    Function that registers depth image to rgb image. Some of the points are
-    lost due to discretization errors.
+    Function that registers depth image to rgb image and saves the resulting
+    depth image. Some of the points are lost due to discretization errors.
 
     Input:
-        float_depth_image - depth image converted to float type
-        rgb_intrinsics - intrinsic parameters of the rgb camera
-        depth_intrinsics - intrinsic parameters of the depth camera
-        extrinsics - extrinsic parameters between rgb and depth cameras
-        rgb_shape - image size of rgb image (rows, columns)
-        registered_depth_path - path where to store the image including file
+        float_depth_image - Depth image converted to float type
+        rgb_intrinsics - Intrinsic parameters of the rgb camera
+        depth_intrinsics - Intrinsic parameters of the depth camera
+        extrinsics - Extrinsic parameters between rgb and depth cameras
+        rgb_shape - Image size of rgb image (rows, columns)
+        registered_depth_path - Path where to store the image including file
         name and extension
-        depth_scale_mm - conversion factor for depth (e.g. 1 means that value
+        depth_scale_mm - Conversion factor for depth (e.g. 1 means that value
         of 1000 in uint16 depth image corresponds to 1.0 in float depth image
         and to 1m in real world)
 
     Output:
-        float_depth_registered - depth image registered to rgb, float type
-        uint_depth_registered - depth image registered to rgb, uint16 type
+        float_depth_registered - Depth image registered to rgb, float type
+        uint_depth_registered - Depth image registered to rgb, uint16 type
     """
 
     depth_points_3d = cv2.rgbd.depthTo3d(float_depth_image, depth_intrinsics)
@@ -109,12 +110,20 @@ def save_register_depth_image(float_depth_image,
 
     log.debug("Computing the registered depth image.")
 
-    for point in depth_points_in_rgb_frame:
-        u = int(fx * point.x / point.z + cx + 0.5)
-        v = int(fy * point.y / point.z + cy + 0.5)
-        float_depth_registered[u, v] = point.z
+    for points in depth_points_in_rgb_frame:
+        for point in points:
+            u = int(fx * point[0] / point[2] + cx + 0.5)
+            v = int(fy * point[1] / point[2] + cy + 0.5)
+
+            height = rgb_shape[0]
+            width = rgb_shape[1]
+            if (u >= 0 and u < width and v >= 0 and v < height):
+                float_depth_registered[v, u] = point[2]
 
     uint_depth_registered = convert_depth_float_to_uint(float_depth_registered)
+    kernel = np.ones((5, 5), np.uint16)
+    uint_depth_registered = cv2.morphologyEx(uint_depth_registered,
+                                             cv2.MORPH_CLOSE, kernel)
 
     cv2.imwrite(registered_depth_path, uint_depth_registered)
 
@@ -124,14 +133,35 @@ def save_register_depth_image(float_depth_image,
 def save_colored_point_cloud_to_ply(rgb_image,
                                     depth_image,
                                     rgb_intrinsics,
+                                    rgb_distortion,
                                     depth_intrinsics,
                                     extrinsics,
                                     cloud_path,
                                     depth_scale_mm=1.0,
                                     register_depth=False):
     """
+    Function that registers depth image to rgb image. Some of the points are
+    lost due to discretization errors.
 
+    Input:
+        rgb_image - Input rgb image
+        depth_image - Input depth image
+        rgb_intrinsics - Intrinsic parameters of the rgb camera
+        rgb_distortion - Distortion parameters of the rgb camera
+        depth_intrinsics - Intrinsic parameters of the depth camera
+        extrinsics - Extrinsic parameters between rgb and depth cameras
+        rgb_shape - Image size of rgb image (rows, columns)
+        cloud_path - Path where to store the point cloud, including file
+        name and extension
+        depth_scale_mm - Conversion factor for depth (e.g. 1 means that value
+        of 1000 in uint16 depth image corresponds to 1.0 in float depth image
+        and to 1m in real world)
+        register_depth - If True, registered depth images will be used and
+        therefore the resulting point cloud will be organized in the order of
+        the rgb image.
     """
+
+    rgb_image = cv2.undistort(rgb_image, rgb_intrinsics, rgb_distortion)
 
     if register_depth:
         log.debug(("Using depth_registered image, therefore the resulting "

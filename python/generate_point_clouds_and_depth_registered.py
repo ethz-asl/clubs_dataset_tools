@@ -26,13 +26,14 @@ def generate_point_cloud(scene_folder,
     Function that generates point cloud from RGB and Depth images.
 
     Input:
-        scene_folder - path to the scene folder
-        sensor_folder - list containing folder names for rgb and depth
+        scene_folder - Path to the scene folder
+        sensor_folder - List containing folder names for rgb and depth
         image, as well as the sensor root folder
-        calib_params - calibration parameters from the camera
+        calib_params - Calibration parameters from the camera
         (CalibrationParams class)
-        use_stereo_depth - if set tu True, stereo depth will be used and
-        therefore IR intrinsics instead of depth intrinsics
+        use_stereo_depth - If set to True, stereo depth will be used and
+        therefore generated stereo depth intrinsics instead of device depth
+        intrinsics
     """
 
     images_rgb = find_images_in_folder(scene_folder + sensor_folder[0])
@@ -55,8 +56,8 @@ def generate_point_cloud(scene_folder,
         depth_images = read_images(image_paths_depth, image_type=cv2.CV_16UC1)
 
         if save_point_clouds:
-            point_cloud_folder = create_point_cloud_folder(
-                scene_folder + sensor_folder[2])
+            point_cloud_folder = create_point_cloud_folder(scene_folder +
+                                                           sensor_folder[2])
         if save_depth_registered:
             depth_registered_folder = create_depth_registered_folder(
                 scene_folder + sensor_folder[2])
@@ -70,13 +71,22 @@ def generate_point_cloud(scene_folder,
             if save_depth_registered:
                 depth_registerd_path = (
                     depth_registered_folder + '/' + timestamps[i] +
-                    '_depth_registered_image.png')
-                float_depth_reg, uint_depth_reg = save_register_depth_image(
-                    float_depth_image, calib_params.rgb_intrinsics,
-                    calib_params.depth_intrinsics,
-                    calib_params.depth_extrinsics,
-                    (calib_params.rgb_height, calib_params.rgb_width),
-                    depth_registerd_path, calib_params.depth_scale_mm)
+                    '_registered_depth.png')
+                if use_stereo_depth:
+                    float_depth_reg, uint_depth_reg = save_register_depth_image(
+                        float_depth_image, calib_params.rgb_intrinsics,
+                        calib_params.ir1_intrinsics,
+                        calib_params.depth_extrinsics,
+                        (calib_params.rgb_height, calib_params.rgb_width),
+                        depth_registerd_path, calib_params.depth_scale_mm)
+                else:
+                    float_depth_reg, uint_depth_reg = save_register_depth_image(
+                        float_depth_image, calib_params.rgb_intrinsics,
+                        calib_params.depth_intrinsics,
+                        calib_params.depth_extrinsics,
+                        (calib_params.rgb_height, calib_params.rgb_width),
+                        depth_registerd_path, calib_params.depth_scale_mm)
+
             if save_point_clouds:
                 point_cloud_path = (point_cloud_folder + '/' + timestamps[i] +
                                     '_point_cloud.ply')
@@ -85,6 +95,7 @@ def generate_point_cloud(scene_folder,
                         rgb_images[i],
                         float_depth_image,
                         calib_params.rgb_intrinsics,
+                        calib_params.rgb_distortion_coeffs,
                         calib_params.ir1_intrinsics,
                         calib_params.depth_extrinsics,
                         point_cloud_path,
@@ -95,6 +106,7 @@ def generate_point_cloud(scene_folder,
                         rgb_images[i],
                         float_depth_image,
                         calib_params.rgb_intrinsics,
+                        calib_params.rgb_distortion_coeffs,
                         calib_params.depth_intrinsics,
                         calib_params.depth_extrinsics,
                         point_cloud_path,
@@ -113,25 +125,14 @@ if __name__ == '__main__':
             "different ways this function can be called. First one is by "
             "passing in the dataset root folder (flag --dataset_folder) which "
             "will create a new folder for each object/scene and each sensor "
-            "(d415 and d435), containing the depth image obtained through "
-            "stereo matching. Second way is to pass object/box scene root "
-            "folder (flag --scene_folder) which will do the same for that "
-            "specific scene."))
+            "(ps, d415 and d435), containing the generated point clouds. "
+            "Second way is to pass object/box scene root folder "
+            "(flag --scene_folder) which will do the same for that specific "
+            "scene."))
     parser.add_argument(
         '--dataset_folder', type=str, help="Path to the dataset root folder.")
     parser.add_argument(
-        '--use_only_boxes',
-        type=bool,
-        default=False,
-        help=("If this flag is set to True, depth from stereo will only be "
-              "computed for the box scenes."))
-    parser.add_argument(
         '--scene_folder', type=str, help="Path to the scene root folder.")
-    parser.add_argument(
-        '--log',
-        type=str,
-        default='CRITICAL',
-        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
     parser.add_argument(
         '--ps_calib_file',
         type=str,
@@ -141,31 +142,39 @@ if __name__ == '__main__':
     parser.add_argument(
         '--d415_calib_file',
         type=str,
-        default='config/realsense_hd_d415.yaml',
+        default='config/realsense_d415_device_depth.yaml',
         help=("Path to RealSense D415 calibration yaml file. By default: "
-              "config/realsense_hd_d415.yaml"))
+              "config/realsense_d415_device_depth.yaml"))
     parser.add_argument(
         '--d435_calib_file',
         type=str,
-        default='config/realsense_hd_d435.yaml',
+        default='config/realsense_d435_device_depth.yaml',
         help=("Path to RealSense D435 calibration yaml file. By default: "
-              "config/realsense_hd_d435.yaml"))
+              "config/realsense_d435_device_depth.yaml"))
+    parser.add_argument(
+        '--use_only_boxes',
+        action='store_true',
+        help=("If this flag is set, depth from stereo will only be computed "
+              "for the box scenes."))
     parser.add_argument(
         '--use_stereo_depth',
-        type=bool,
-        default=False,
-        help=("If this flag is set to True, depth from stereo will be used"
-              "for cloud generation"))
+        action='store_true',
+        help=("If this flag is set, depth from stereo will be used "
+              "for cloud generation. Make sure to pass in the correct "
+              "calibration file."))
     parser.add_argument(
         '--save_depth_registered',
-        type=bool,
-        default=False,
-        help="If this flag is set to True, registered depth will be saved.")
+        action='store_true',
+        help="If this flag is set, registered depth will be saved.")
     parser.add_argument(
         '--save_point_clouds',
-        type=bool,
-        default=True,
-        help="If this flag is set to True, point clouds will be saved.")
+        action='store_true',
+        help="If this flag is set, point clouds will be saved.")
+    parser.add_argument(
+        '--log',
+        type=str,
+        default='CRITICAL',
+        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)
@@ -173,6 +182,8 @@ if __name__ == '__main__':
     log.debug("Setting log verbosity to " + args.log)
 
     used_scenes = []
+
+    calib_params = CalibrationParams()
 
     if args.dataset_folder is not None:
         log.debug("Received dataset_folder.")
@@ -184,8 +195,6 @@ if __name__ == '__main__':
         else:
             log.debug("Processing both box and object scenes.")
             used_scenes = object_scenes + box_scenes
-
-        calib_params = CalibrationParams()
 
         progress_bar = tqdm(
             total=len(used_scenes) * 3, desc="Overall Progress")
@@ -207,14 +216,14 @@ if __name__ == '__main__':
             if d415_folder != []:
                 generate_point_cloud(
                     scene, d415_folder, calib_params, args.save_point_clouds,
-                    args.save_depth_registered, arg.use_stereo_depth)
+                    args.save_depth_registered, args.use_stereo_depth)
             progress_bar.update()
 
             calib_params.read_from_yaml(args.d435_calib_file)
             if d435_folder != []:
                 generate_point_cloud(
                     scene, d435_folder, calib_params, args.save_point_clouds,
-                    args.save_depth_registered, arg.use_stereo_depth)
+                    args.save_depth_registered, args.use_stereo_depth)
             progress_bar.update()
         progress_bar.close()
     elif args.scene_folder is not None:
@@ -232,13 +241,14 @@ if __name__ == '__main__':
 
         calib_params.read_from_yaml(args.d415_calib_file)
         if d415_folder != []:
-            generate_point_cloud(scene, d415_folder, calib_params,
-                                 args.save_point_clouds,
-                                 args.save_depth_registered)
+            generate_point_cloud(
+                scene, d415_folder, calib_params, args.save_point_clouds,
+                args.save_depth_registered, args.use_stereo_depth)
+
         calib_params.read_from_yaml(args.d435_calib_file)
         if d435_folder != []:
-            generate_point_cloud(scene, d435_folder, calib_params,
-                                 args.save_point_clouds,
-                                 args.save_depth_registered)
+            generate_point_cloud(
+                scene, d435_folder, calib_params, args.save_point_clouds,
+                args.save_depth_registered, args.use_stereo_depth)
     else:
         parser.print_help()

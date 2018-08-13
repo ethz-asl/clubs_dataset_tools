@@ -3,6 +3,7 @@
 import argparse
 import cv2
 import logging as log
+import numpy as np
 
 from tqdm import tqdm
 
@@ -20,12 +21,12 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
     Function that rectifies images and applies SGBM algorithm to compute depth.
 
     Input:
-        scene_folder - path to the scene folder
-        sensor_folder - list containing folder names for left and right ir
+        scene_folder - Path to the scene folder
+        sensor_folder - List containing folder names for left and right ir
         image, as well as the sensor root folder
-        stereo_params - parameters for stereo matching (StereoMatchingParams
+        stereo_params - Parameters for stereo matching (StereoMatchingParams
         class)
-        calib_params - calibration parameters from the camera
+        calib_params - Calibration parameters from the camera
         (CalibrationParams class)
     """
 
@@ -47,13 +48,13 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
         ir_left = read_images(image_paths_left)
         ir_right = read_images(image_paths_right)
 
-        stereo_depth_folder = create_stereo_depth_folder(
-            scene_folder + sensor_folder[2])
+        stereo_depth_folder = create_stereo_depth_folder(scene_folder +
+                                                         sensor_folder[2])
 
         stereo_bar = tqdm(total=len(ir_left), desc="Stereo Matching Progress")
         for i in range(len(ir_left)):
             log.debug("Rectifying " + str(i) + ". image pair")
-            rectified_l, rectified_r, Q = rectify_images(
+            rectified_l, rectified_r, Q, RL, PL = rectify_images(
                 ir_left[i], calib_params.ir1_intrinsics,
                 calib_params.ir1_distortion_coeffs, ir_right[i],
                 calib_params.ir2_intrinsics,
@@ -67,8 +68,17 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
                 calib_params.ir1_intrinsics[0, 0],
                 stereo_params,
                 scale=10000)
-            cv2.imwrite(stereo_depth_folder + '/' + timestamps[i] +
-                        '_depth_images.png', depth_uint)
+
+            zero_distortion = np.array([0, 0, 0, 0, 0])
+            map_l1, map_l2 = cv2.initUndistortRectifyMap(
+                PL[:3, :3], zero_distortion, np.linalg.inv(RL), PL[:3, :3],
+                depth_uint.shape[::-1], cv2.CV_16SC2)
+            depth_uint = cv2.remap(depth_uint, map_l1, map_l2,
+                                   cv2.INTER_LINEAR)
+
+            cv2.imwrite(
+                stereo_depth_folder + '/' + timestamps[i] +
+                '_stereo_depth.png', depth_uint)
             stereo_bar.update()
         stereo_bar.close()
     else:
@@ -82,39 +92,42 @@ if __name__ == '__main__':
             "depth image. There are two different ways this function can be "
             "called. First one is by passing in the dataset root folder "
             "(flag --dataset_folder) which will create a new folder for each "
-            "object/scene and each sensor (d415 and d435), containing the "
+            "object/box scene and each sensor (d415 and d435), containing the "
             "depth image obtained through stereo matching. Second way is to "
             "pass object/box scene root folder (flag --scene_folder) which "
             "will do the same for that specific scene."))
     parser.add_argument(
         '--dataset_folder', type=str, help="Path to the dataset root folder.")
     parser.add_argument(
-        '--use_only_boxes',
-        type=bool,
-        default=False,
-        help=("If this flag is set to True, depth from stereo will only be "
-              "computed for the box scenes."))
-    parser.add_argument(
         '--scene_folder', type=str, help="Path to the scene root folder.")
+    parser.add_argument(
+        '--d415_calib_file',
+        type=str,
+        default='config/realsense_d415_stereo_depth.yaml',
+        help=("Path to RealSense D415 calibration yaml file. By default: "
+              "config/realsense_d415_stereo_depth.yaml"))
+    parser.add_argument(
+        '--d435_calib_file',
+        type=str,
+        default='config/realsense_d435_stereo_depth.yaml',
+        help=("Path to RealSense D435 calibration yaml file. By default: "
+              "config/realsense_d435_stereo_depth.yaml"))
+    parser.add_argument(
+        '--stereo_params_file',
+        type=str,
+        default='config/default_stereo_params.yaml',
+        help=("Path to stereo parameters yaml file. By default: "
+              "config/default_stereo_params.yaml"))
+    parser.add_argument(
+        '--use_only_boxes',
+        action='store_true',
+        help=("If this flag is set, depth from stereo will only be computed "
+              "for the box scenes."))
     parser.add_argument(
         '--log',
         type=str,
         default='CRITICAL',
         help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
-    parser.add_argument(
-        '--d415_calib_file',
-        type=str,
-        default='config/realsense_hd_d415.yaml',
-        help=(
-            "Path to RealSense D415 calibration yaml file. By default: "
-            "config/realsense_hd_d415.yaml"))
-    parser.add_argument(
-        '--d435_calib_file',
-        type=str,
-        default='config/realsense_hd_d435.yaml',
-        help=(
-            "Path to RealSense D435 calibration yaml file. By default: "
-            "config/realsense_hd_d435.yaml"))
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)
@@ -124,6 +137,7 @@ if __name__ == '__main__':
     used_scenes = []
 
     stereo_params = StereoMatchingParams()
+    stereo_params.read_from_yaml(args.stereo_params_file)
     calib_params = CalibrationParams()
 
     if args.dataset_folder is not None:
