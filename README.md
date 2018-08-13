@@ -1,16 +1,19 @@
-# clubs_dataset_tools
-Tools for the CLUBS dataset
+# CLUBS Dataset Tools
+TODO
+
 
 
 # Requirements
 
-opencv
+To use the hand-eye calibration please follow the instructions on the hand_eye_calibration package website:
+https://github.com/ethz-asl/hand_eye_calibration.
+Note that only hand_eye_calibration package is necessary, all the other packages can be ignored.
+
 
 To install all the python requirements run:
 ```
 pip install -r requirements.txt
 ```
-
 
 # Calibration
 In order to run the calibration, all the data (images and poses) needs to be placed in matlab/data folder.
