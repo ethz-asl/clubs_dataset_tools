@@ -9,7 +9,7 @@ oepncv, opencv-contrib-python, numpy, yaml, libtiff, logging, tqdm
 
 # Calibration
 In order to run the calibration, all the data (images and poses) needs to be placed in matlab/data folder.
-![alt text](https://github.com/ethz-asl/clubs_dataset_tools/images/data_folder_structure.png)
+![alt text](https://github.com/ethz-asl/clubs_dataset_tools/blob/feature/cloud_generation/images/data_folder_structure.png)
 
 Furthermore, if you wish to run the hand-eye calibration, hand_eye_calibration package from https://github.com/ethz-asl/hand_eye_calibration needs to be compiled and sourced. To run the matlab script, only hand_eye_calibration package is necessary, hand_eye_calibration_batch_estimation, hand_eye_calibration_experiments and hand_eye_calibration_target_extractor packages can therefore be ignored (by adding CATKIN_IGNORE).
 
