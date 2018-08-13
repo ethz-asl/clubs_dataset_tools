@@ -1,0 +1,11 @@
+min_disparity: 39
+num_disparities: 272
+block_size: 17
+p1: 201
+p2: 948
+disp_12_max_diff: -1
+pre_filter_cap: 9
+uniqueness_ratio: 19
+speckle_window_size: 2048
+speckle_range: 1
+mode: 3
