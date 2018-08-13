@@ -76,8 +76,8 @@ def save_register_depth_image(float_depth_image,
                               registered_depth_path,
                               depth_scale_mm=1.0):
     """
-    Function that registers depth image to rgb image. Some of the points are
-    lost due to discretization errors.
+    Function that registers depth image to rgb image and saves the resulting
+    depth image. Some of the points are lost due to discretization errors.
 
     Input:
         float_depth_image - depth image converted to float type
@@ -139,7 +139,25 @@ def save_colored_point_cloud_to_ply(rgb_image,
                                     depth_scale_mm=1.0,
                                     register_depth=False):
     """
+    Function that registers depth image to rgb image. Some of the points are
+    lost due to discretization errors.
 
+    Input:
+        rgb_image - input rgb image
+        depth_image - input depth image
+        rgb_intrinsics - intrinsic parameters of the rgb camera
+        rgb_distortion - distortion parameters of the rgb camera
+        depth_intrinsics - intrinsic parameters of the depth camera
+        extrinsics - extrinsic parameters between rgb and depth cameras
+        rgb_shape - image size of rgb image (rows, columns)
+        cloud_path - path where to store the point cloud, including file
+        name and extension
+        depth_scale_mm - conversion factor for depth (e.g. 1 means that value
+        of 1000 in uint16 depth image corresponds to 1.0 in float depth image
+        and to 1m in real world)
+        register_depth - if True, registered depth images will be used and
+        therefore the resulting point cloud will be organized in the order of
+        the rgb image.
     """
 
     rgb_image = cv2.undistort(rgb_image, rgb_intrinsics, rgb_distortion)

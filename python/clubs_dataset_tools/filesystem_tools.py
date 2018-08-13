@@ -296,7 +296,7 @@ def create_depth_registered_folder(sensor_folder):
         depth_registered_folder - path to the created point_cloud folder
     """
 
-    depth_registered_folder = sensor_folder + '/depth_registered_images'
+    depth_registered_folder = sensor_folder + '/registered_depth_images'
 
     if not os.path.exists(depth_registered_folder):
         os.makedirs(depth_registered_folder)

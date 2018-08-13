@@ -31,8 +31,9 @@ def generate_point_cloud(scene_folder,
         image, as well as the sensor root folder
         calib_params - calibration parameters from the camera
         (CalibrationParams class)
-        use_stereo_depth - if set tu True, stereo depth will be used and
-        therefore IR intrinsics instead of depth intrinsics
+        use_stereo_depth - if set to True, stereo depth will be used and
+        therefore generated stereo depth intrinsics instead of device depth
+        intrinsics
     """
 
     images_rgb = find_images_in_folder(scene_folder + sensor_folder[0])
@@ -70,7 +71,7 @@ def generate_point_cloud(scene_folder,
             if save_depth_registered:
                 depth_registerd_path = (
                     depth_registered_folder + '/' + timestamps[i] +
-                    '_depth_registered_image.png')
+                    '_registered_depth.png')
                 if use_stereo_depth:
                     float_depth_reg, uint_depth_reg = save_register_depth_image(
                         float_depth_image, calib_params.rgb_intrinsics,
@@ -124,10 +125,10 @@ if __name__ == '__main__':
             "different ways this function can be called. First one is by "
             "passing in the dataset root folder (flag --dataset_folder) which "
             "will create a new folder for each object/scene and each sensor "
-            "(d415 and d435), containing the depth image obtained through "
-            "stereo matching. Second way is to pass object/box scene root "
-            "folder (flag --scene_folder) which will do the same for that "
-            "specific scene."))
+            "(ps, d415 and d435), containing the generated point clouds. "
+            "Second way is to pass object/box scene root folder "
+            "(flag --scene_folder) which will do the same for that specific "
+            "scene."))
     parser.add_argument(
         '--dataset_folder', type=str, help="Path to the dataset root folder.")
     parser.add_argument(

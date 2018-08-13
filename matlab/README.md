@@ -1,2 +1,0 @@
-Requirements:
-hand_eye_calibration

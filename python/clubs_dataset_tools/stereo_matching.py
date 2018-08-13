@@ -61,6 +61,12 @@ class StereoMatchingParams:
         self.speckle_window_size = stereo_params['speckle_window_size']
         self.speckle_range = stereo_params['speckle_range']
         self.mode = stereo_params['mode']
+        self.apply_bilateral_filter = stereo_params['apply_bilateral_filter']
+        self.bilateral_filter_size = stereo_params['bilateral_filter_size']
+        self.bilateral_filter_sigma = stereo_params['bilateral_filter_sigma']
+        self.apply_wls_filter = stereo_params['apply_wls_filter']
+        self.wls_filter_sigma_color = stereo_params['wls_filter_sigma_color']
+        self.wls_filter_lambda = stereo_params['wls_filter_lambda']
 
 
 def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
