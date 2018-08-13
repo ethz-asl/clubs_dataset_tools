@@ -16,28 +16,14 @@ class CalibrationParams:
         Constructor for CalibrationParams.
         """
 
-        log.debug("Initialized CalibrationParams with default values.")
+        log.debug("Initialized an empty CalibrationParams class.")
 
-        self.camera_matrix_l = np.array([[1387.426, 0.000,
-                                          969.672], [0.000, 1386.698, 559.111],
-                                         [0.000, 0.000, 1.000]])
-        self.dist_coeffs_l = np.array([
-            0.126991973128, -0.351631362871, 0.000823677750, 0.000733769806,
-            0.250226895328
-        ])
-        self.camera_matrix_r = np.array([[1387.668, 0.000,
-                                          953.792], [0.000, 1387.664, 553.310],
-                                         [0.000, 0.000, 1.000]])
-        self.dist_coeffs_r = np.array([
-            0.128268524583, -0.368150717004, -0.000893114163, 0.001179459198,
-            0.284531882325
-        ])
-        self.extrinsics_r = np.array(
-            [[0.999986130, 0.00125724064,
-              -0.00511359975], [-0.00123899938, 0.999992869, 0.00356868523],
-             [0.00511805018, -0.00356230478, 0.999980555]])
-        self.extrinsics_t = np.array(
-            [-0.0550792390, -0.0000461457433, -0.000494267796])
+        self.camera_matrix_l = np.array([])
+        self.dist_coeffs_l = np.array([])
+        self.camera_matrix_r = np.array([])
+        self.dist_coeffs_r = np.array([])
+        self.extrinsics_r = np.array([])
+        self.extrinsics_t = np.array([])
 
     def read_from_yaml(self, yaml_file):
         """
