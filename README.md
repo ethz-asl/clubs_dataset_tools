@@ -3,4 +3,9 @@ Tools for the CLUBS dataset
 
 
 # Requirements
-oepncv, numpy, yaml, libtiff, logging, tqdm
+opencv
+
+To install all the python requirements run:
+```
+pip install -r requirements.txt
+```

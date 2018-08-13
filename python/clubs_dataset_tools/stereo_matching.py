@@ -30,7 +30,7 @@ class CalibrationParams:
         Function that reads the calibration parameters from the yaml file.
 
         Input:
-            yaml_file - path to the yaml file containing the calibration
+            yaml_file - Path to the yaml file containing the calibration
             parameters.
         """
 
@@ -76,7 +76,7 @@ class StereoMatchingParams:
         Function that reads the stereo parameters from the yaml file.
 
         Input:
-            yaml_file - path to the yaml file containing the stereo parameters.
+            yaml_file - Path to the yaml file containing the stereo parameters.
         """
 
         log.debug("Initialized StereoMatchingParams from yaml file: " +
@@ -106,53 +106,55 @@ def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
     undistorted images and Q matrix that maps disparity image to 3D.
 
     Input:
-        image_l - left image
+        image_l - Left image
         camera_matrix_l - 3x3 calibration matrix of the left image
-        dist_coeffs_l - distortion coefficients of the left image
+        dist_coeffs_l - Distortion coefficients of the left image
         image_r - right image
         camera_matrix_r - 3x3 calibration matrix of the right image
-        dist_coeffs_r - distortion coefficients of the right image
-        extrinsics_r - extrinsics 3x3 rotation matrix
-        extrinsics_t - extrinsics translation vector
+        dist_coeffs_r - Distortion coefficients of the right image
+        extrinsics_r - Extrinsics 3x3 rotation matrix
+        extrinsics_t - Extrinsics translation vector
 
     Output:
-        rectified_l - rectified and undistorted left image
-        rectified_r - rectified and undistorted right image
-        Q - 4x4 perspective transformation matrix:
+        rectified_l - Rectified and undistorted left image
+        rectified_r - Rectified and undistorted right image
+        disparity_to_depth_map - 4x4 perspective transformation matrix:
             [X Y Z W]^t = Q * [u v disp(u,v) 1]^t
     """
 
-    RL, RR, PL, PR, Q, valid_pix_ROI_l, valid_pix_ROI_r = cv2.stereoRectify(
-        camera_matrix_l,
-        dist_coeffs_l,
-        camera_matrix_r,
-        dist_coeffs_r,
-        image_l.shape[::-1],
-        extrinsics_r,
-        extrinsics_t,
-        flags=cv2.CALIB_ZERO_DISPARITY,
-        alpha=-1)
+    (rotation_matrix_left, rotation_matrix_right, new_calibration_left,
+     new_calibration_right, disparity_to_depth_map, valid_ROI_left,
+     valid_ROI_right) = cv2.stereoRectify(
+         camera_matrix_l,
+         dist_coeffs_l,
+         camera_matrix_r,
+         dist_coeffs_r,
+         image_l.shape[::-1],
+         extrinsics_r,
+         extrinsics_t,
+         flags=cv2.CALIB_ZERO_DISPARITY,
+         alpha=-1)
 
     map_l1, map_l2 = cv2.initUndistortRectifyMap(
-        camera_matrix_l, dist_coeffs_l, RL, PL, image_l.shape[::-1],
-        cv2.CV_16SC2)
+        camera_matrix_l, dist_coeffs_l, rotation_matrix_left,
+        new_calibration_left, image_l.shape[::-1], cv2.CV_16SC2)
     map_r1, map_r2 = cv2.initUndistortRectifyMap(
-        camera_matrix_r, dist_coeffs_r, RR, PR, image_r.shape[::-1],
-        cv2.CV_16SC2)
+        camera_matrix_r, dist_coeffs_r, rotation_matrix_right,
+        new_calibration_right, image_r.shape[::-1], cv2.CV_16SC2)
 
     rectified_l = cv2.remap(image_l, map_l1, map_l2, cv2.INTER_LINEAR)
     rectified_r = cv2.remap(image_r, map_r1, map_r2, cv2.INTER_LINEAR)
 
     log.debug("Rectification results: ")
-    log.debug("RL:\n" + str(RL))
-    log.debug("RR:\n" + str(RR))
-    log.debug("PL:\n" + str(PL))
-    log.debug("PR:\n" + str(PR))
-    log.debug("Q:\n" + str(Q))
-    log.debug("valid_pix_ROI_l:\n" + str(valid_pix_ROI_l))
-    log.debug("valid_pix_ROI_r:\n" + str(valid_pix_ROI_r))
+    log.debug("rotation_matrix_left:\n" + str(rotation_matrix_left))
+    log.debug("rotation_matrix_right:\n" + str(rotation_matrix_right))
+    log.debug("new_calibration_left:\n" + str(new_calibration_left))
+    log.debug("new_calibration_right:\n" + str(new_calibration_right))
+    log.debug("disparity_to_depth_map:\n" + str(disparity_to_depth_map))
+    log.debug("valid_ROI_left:\n" + str(valid_ROI_left))
+    log.debug("valid_ROI_right:\n" + str(valid_ROI_right))
 
-    return rectified_l, rectified_r, Q
+    return rectified_l, rectified_r, disparity_to_depth_map
 
 
 def stereo_match(undistorted_rectified_l,
@@ -160,26 +162,26 @@ def stereo_match(undistorted_rectified_l,
                  baseline,
                  focal_length,
                  stereo_params,
-                 scale=1000):
+                 scale=1000.0):
     """
     Function that performs stereo matching using semi global block
-    matcher (SGBM), to obtain disparity map.
+    matcher (SGBM), to obtain disparity and depth map.
 
     Input:
-        undistorted_rectified_l - undistorted and rectified left image
-        undistorted_rectified_r - undistorted and rectified right image
-        baseline - baseline between the left and right image in m
-        focal_length - focal length of the left and right camera (cameras with
+        undistorted_rectified_l - Undistorted and rectified left image
+        undistorted_rectified_r - Undistorted and rectified right image
+        baseline - Baseline between the left and right image in m
+        focal_length - Focal length of the left and right camera (cameras with
         different focal length are not supported)
         stereo_params - StereoMatchingParams class containing parameters for
         the SGBM algorithm
-        scale - scaling used to convert to uint depth image (1000 for
+        scale - Scaling used to convert to uint depth image (1000 for
         converting m to mm)
 
     Output:
-        depth_uint - depth image represented as a 16-bit uint image
-        depth_float - depth image represented as a 32-bit float image
-        disparity_float - disparity image represented as a 32-bit float image
+        depth_uint - Depth image represented as a 16-bit uint image
+        depth_float - Depth image represented as a 32-bit float image
+        disparity_float - Disparity image represented as a 32-bit float image
     """
 
     stereo_matcher = cv2.StereoSGBM_create(
@@ -193,7 +195,7 @@ def stereo_match(undistorted_rectified_l,
         uint8_undistorted_rectified_l = undistorted_rectified_l
     elif undistorted_rectified_l.dtype == 'uint16':
         uint8_undistorted_rectified_l = (
-            undistorted_rectified_l / 255).astype('uint8')
+            undistorted_rectified_l / 255.0).astype('uint8')
     else:
         log.error("\nUnknown image type!")
         return
@@ -202,7 +204,7 @@ def stereo_match(undistorted_rectified_l,
         uint8_undistorted_rectified_r = undistorted_rectified_r
     elif undistorted_rectified_r.dtype == 'uint16':
         uint8_undistorted_rectified_r = (
-            undistorted_rectified_r / 255).astype('uint8')
+            undistorted_rectified_r / 255.0).astype('uint8')
     else:
         log.error("\nUnknown image type!")
         return

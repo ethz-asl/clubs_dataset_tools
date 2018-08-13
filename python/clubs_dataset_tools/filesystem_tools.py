@@ -12,12 +12,12 @@ def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):
     Function that reads all the images from a list of file paths.
 
     Input:
-        image_files - list containing image full paths
-        image_extension - extension of the images to be used
-        image_type - opencv image type
+        image_files - List containing absolute image full paths
+        image_extension - Extension of the images to be used
+        image_type - Opencv image type
 
     Output:
-        images - list containing actual images
+        images - List of numpy arrays containing the images
     """
 
     images = []
@@ -49,11 +49,11 @@ def find_images_in_folder(image_folder, image_extension='.png'):
     Function that returns image filenames.
 
     Input:
-        image_folder - path to the image folder
-        image_extension - extension of the images to search for
+        image_folder - Path to the image folder
+        image_extension - Extension of the images to search for
 
     Output:
-        images - list with image filenames
+        images - List with image filenames
     """
 
     images = []
@@ -76,14 +76,15 @@ def find_ir_image_folders(input_folder):
     exist, for all the sensors. Path is relative to the input folder path.
 
     Input:
-        input_folder - path to specific object/box folder
+        input_folder - Path to specific object/box folder
 
     Output:
-        d415_image_folders - realsense d415 ir left and right image folder path
+        d415_image_folders - Realsense d415 ir left and right image folder path
         relative to the input_folder and sensor root folder
-        d435_image_folders - realsense d435 ir left and right image folder path
+        d435_image_folders - Realsense d435 ir left and right image folder path
         relative to the input_folder and sensor root folder
     """
+    expected_number_of_folders = 3
 
     d415_image_folders = []
     d415_ir_l = '/realsense_d415/ir1_images'
@@ -93,7 +94,7 @@ def find_ir_image_folders(input_folder):
     if os.path.isdir(input_folder + d415_ir_r):
         d415_image_folders.append(d415_ir_r)
     d415_image_folders.append('/realsense_d415')
-    if len(d415_image_folders) is not 3:
+    if len(d415_image_folders) is not expected_number_of_folders:
         log.error("\nD415 ir folders could not be found!\n" +
                   "Looking for:\n" + str(input_folder + d415_ir_l) + "\n" +
                   str(input_folder + d415_ir_r))
@@ -108,7 +109,7 @@ def find_ir_image_folders(input_folder):
     if os.path.isdir(input_folder + d435_ir_r):
         d435_image_folders.append(d435_ir_r)
     d435_image_folders.append('/realsense_d435')
-    if len(d435_image_folders) is not 3:
+    if len(d435_image_folders) is not expected_number_of_folders:
         log.error("\nD435 ir folders could not be found!\n" +
                   "Looking for:\n" + str(input_folder + d435_ir_l) + "\n" +
                   str(input_folder + d435_ir_r))
@@ -124,16 +125,17 @@ def find_rgb_d_image_folders(input_folder):
     the sensors. Path is relative to the input folder path.
 
     Input:
-        input_folder - path to specific object/box folder
+        input_folder - Path to specific object/box folder
 
     Output:
-        ps_image_folders - primesense rgb and depth image folder path relative
+        ps_image_folders - Primesense rgb and depth image folder path relative
         to the input_folder
-        d415_image_folders - realsense d415 rgb and depth image folder path
+        d415_image_folders - Realsense d415 rgb and depth image folder path
         relative to the input_folder
-        d435_image_folders - realsense d435 rgb and depth image folder path
+        d435_image_folders - Realsense d435 rgb and depth image folder path
         relative to the input_folder
     """
+    expected_number_of_folders = 3
 
     ps_image_folders = []
     ps_rgb = '/primesense/rgb_images'
@@ -142,7 +144,7 @@ def find_rgb_d_image_folders(input_folder):
     ps_depth = '/primesense/depth_images'
     if os.path.isdir(input_folder + ps_depth):
         ps_image_folders.append(ps_depth)
-    if len(ps_image_folders) is not 3:
+    if len(ps_image_folders) is not expected_number_of_folders:
         log.error("\nPS rgb and depth folders could not be found!\n" +
                   "Looking for:\n" + str(input_folder + ps_rgb) + "\n" +
                   str(input_folder + ps_depth))
@@ -156,7 +158,7 @@ def find_rgb_d_image_folders(input_folder):
     d415_depth = '/realsense_d415/depth_images'
     if os.path.isdir(input_folder + d415_depth):
         d415_image_folders.append(d415_depth)
-    if len(d415_image_folders) is not 3:
+    if len(d415_image_folders) is not expected_number_of_folders:
         log.error("\nD415 rgb and depth folders could not be found!\n" +
                   "Looking for:\n" + str(input_folder + d415_rgb) + "\n" +
                   str(input_folder + d415_depth))
@@ -170,7 +172,7 @@ def find_rgb_d_image_folders(input_folder):
     d435_depth = '/realsense_d435/depth_images'
     if os.path.isdir(input_folder + d435_depth):
         d435_image_folders.append(d435_depth)
-    if len(d435_image_folders) is not 3:
+    if len(d435_image_folders) is not expected_number_of_folders:
         log.error("\nD435 rgb and depth folders could not be found!" +
                   "Looking for:\n" + str(input_folder + d435_rgb) + "\n" +
                   str(input_folder + d435_depth))
@@ -185,11 +187,11 @@ def find_all_folders(dataset_folder):
     Function that returns folder names for object and box scenes.
 
     Input:
-        dataset_folder - path to the dataset folder
+        dataset_folder - Path to the dataset folder
 
     Output:
-        folders_objects - paths of folders containing object scenes
-        folders_boxes - paths of folders containing box scenes
+        folders_objects - Paths of folders containing object scenes
+        folders_boxes - Paths of folders containing box scenes
     """
 
     folders_objects = glob.glob(dataset_folder + '/object_scenes/' +
@@ -210,11 +212,11 @@ def compare_image_names(image_list1, image_list2):
     (timestamps).
 
     Input:
-        image_list1 - list of names from the first image set
-        image_list2 - list of names from the second image set
+        image_list1 - List of names from the first image set
+        image_list2 - List of names from the second image set
 
     Output:
-        timestamps - timestamps found in both image lists
+        timestamps - Timestamps found in both image lists
     """
 
     timestamps_list1 = [image[:10] for image in image_list1]
@@ -237,10 +239,10 @@ def create_stereo_depth_folder(sensor_folder):
     exist.
 
     Input:
-        sensor_folder - path to the sensor folder
+        sensor_folder - Path to the sensor folder
 
     Output:
-        stereo_depth_folder - path to the created stereo depth folder
+        stereo_depth_folder - Path to the created stereo depth folder
     """
 
     stereo_depth_folder = sensor_folder + '/stereo_depth_images'
