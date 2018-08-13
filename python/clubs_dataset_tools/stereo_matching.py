@@ -80,7 +80,7 @@ def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
         image_l - Left image
         camera_matrix_l - 3x3 calibration matrix of the left image
         dist_coeffs_l - Distortion coefficients of the left image
-        image_r - right image
+        image_r - Right image
         camera_matrix_r - 3x3 calibration matrix of the right image
         dist_coeffs_r - Distortion coefficients of the right image
         extrinsics_r - Extrinsics 3x3 rotation matrix

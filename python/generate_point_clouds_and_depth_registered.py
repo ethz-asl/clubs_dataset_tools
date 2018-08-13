@@ -26,12 +26,12 @@ def generate_point_cloud(scene_folder,
     Function that generates point cloud from RGB and Depth images.
 
     Input:
-        scene_folder - path to the scene folder
-        sensor_folder - list containing folder names for rgb and depth
+        scene_folder - Path to the scene folder
+        sensor_folder - List containing folder names for rgb and depth
         image, as well as the sensor root folder
-        calib_params - calibration parameters from the camera
+        calib_params - Calibration parameters from the camera
         (CalibrationParams class)
-        use_stereo_depth - if set to True, stereo depth will be used and
+        use_stereo_depth - If set to True, stereo depth will be used and
         therefore generated stereo depth intrinsics instead of device depth
         intrinsics
     """
