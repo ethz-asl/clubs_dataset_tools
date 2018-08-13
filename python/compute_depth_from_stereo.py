@@ -21,12 +21,12 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
     Function that rectifies images and applies SGBM algorithm to compute depth.
 
     Input:
-        scene_folder - path to the scene folder
-        sensor_folder - list containing folder names for left and right ir
+        scene_folder - Path to the scene folder
+        sensor_folder - List containing folder names for left and right ir
         image, as well as the sensor root folder
-        stereo_params - parameters for stereo matching (StereoMatchingParams
+        stereo_params - Parameters for stereo matching (StereoMatchingParams
         class)
-        calib_params - calibration parameters from the camera
+        calib_params - Calibration parameters from the camera
         (CalibrationParams class)
     """
 

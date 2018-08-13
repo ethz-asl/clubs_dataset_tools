@@ -44,7 +44,7 @@ class CalibrationParams:
         Function that reads the calibration parameters from the yaml file.
 
         Input:
-            yaml_file - path to the yaml file containing the calibration
+            yaml_file - Path to the yaml file containing the calibration
             parameters.
         """
 

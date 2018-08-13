@@ -1,0 +1,5 @@
+numpy==1.14.3
+PyYAML==3.12
+libtiff==0.4.2
+tqdm==4.24.0
+opencv-contrib-python==3.4.1.15
