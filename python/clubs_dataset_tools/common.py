@@ -7,7 +7,7 @@ import numpy as np
 import logging as log
 
 
-class CalibrationParams:
+class CalibrationParams(object):
     """
     Camera intrinsic and extrinsic parameters.
     """
@@ -59,8 +59,7 @@ class CalibrationParams:
                 raw_rgb_intrinsics['data'],
                 (raw_rgb_intrinsics['rows'], raw_rgb_intrinsics['cols'])))
         raw_rgb_distortion_coeffs = calibration_params['rgb_distortion_coeffs']
-        self.rgb_distortion_coeffs = np.array(
-            raw_rgb_distortion_coeffs['data'])
+        self.rgb_distortion_coeffs = np.array(raw_rgb_distortion_coeffs['data'])
         raw_hand_eye_transform = calibration_params['hand_eye_transform']
         self.hand_eye_transform = np.array(
             np.reshape(raw_hand_eye_transform['data'],
@@ -86,16 +85,14 @@ class CalibrationParams:
                 raw_ir1_intrinsics['data'],
                 (raw_ir1_intrinsics['rows'], raw_ir1_intrinsics['cols'])))
         raw_ir1_distortion_coeffs = calibration_params['ir1_distortion_coeffs']
-        self.ir1_distortion_coeffs = np.array(
-            raw_ir1_distortion_coeffs['data'])
+        self.ir1_distortion_coeffs = np.array(raw_ir1_distortion_coeffs['data'])
         raw_ir2_intrinsics = calibration_params['ir2_intrinsics']
         self.ir2_intrinsics = np.array(
             np.reshape(
                 raw_ir2_intrinsics['data'],
                 (raw_ir2_intrinsics['rows'], raw_ir2_intrinsics['cols'])))
         raw_ir2_distortion_coeffs = calibration_params['ir2_distortion_coeffs']
-        self.ir2_distortion_coeffs = np.array(
-            raw_ir2_distortion_coeffs['data'])
+        self.ir2_distortion_coeffs = np.array(raw_ir2_distortion_coeffs['data'])
         raw_ir_extrinsics = calibration_params['ir_extrinsics']
         self.ir_extrinsics = np.array(
             np.reshape(raw_ir_extrinsics['data'],

@@ -63,8 +63,7 @@ def find_images_in_folder(image_folder, image_extension='.png'):
     for file in files:
         log.debug("Found " + file)
         if file.endswith(image_extension):
-            log.debug(
-                "It has the right extension, adding it to the image list")
+            log.debug("It has the right extension, adding it to the image list")
             images.append(file)
 
     return sorted(images)
@@ -95,8 +94,8 @@ def find_ir_image_folders(input_folder):
         d415_image_folders.append(d415_ir_r)
     d415_image_folders.append('/realsense_d415')
     if len(d415_image_folders) is not expected_number_of_folders:
-        log.error("\nD415 ir folders could not be found!\n" +
-                  "Looking for:\n" + str(input_folder + d415_ir_l) + "\n" +
+        log.error("\nD415 ir folders could not be found!\n" + "Looking for:\n" +
+                  str(input_folder + d415_ir_l) + "\n" +
                   str(input_folder + d415_ir_r))
         d415_image_folders = []
     log.debug("Found d415 folders: \n" + str(d415_image_folders))
@@ -110,8 +109,8 @@ def find_ir_image_folders(input_folder):
         d435_image_folders.append(d435_ir_r)
     d435_image_folders.append('/realsense_d435')
     if len(d435_image_folders) is not expected_number_of_folders:
-        log.error("\nD435 ir folders could not be found!\n" +
-                  "Looking for:\n" + str(input_folder + d435_ir_l) + "\n" +
+        log.error("\nD435 ir folders could not be found!\n" + "Looking for:\n" +
+                  str(input_folder + d435_ir_l) + "\n" +
                   str(input_folder + d435_ir_r))
         d435_image_folders = []
     log.debug("Found d435 folders: \n" + str(d435_image_folders))
@@ -206,8 +205,7 @@ def find_all_folders(dataset_folder):
 
     folders_objects = glob.glob(dataset_folder + '/object_scenes/' +
                                 '[0-9]' * 3 + '_' + '[0-9]' * 1 + '_' + '*')
-    log.debug("Found following object scene folders: \n" +
-              str(folders_objects))
+    log.debug("Found following object scene folders: \n" + str(folders_objects))
 
     folders_boxes = glob.glob(dataset_folder + '/box_scenes/box' + '_' +
                               '[0-9]' * 3 + '_' + '[0-9]' * 3)

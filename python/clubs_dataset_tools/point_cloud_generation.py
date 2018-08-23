@@ -112,8 +112,8 @@ def save_register_depth_image(float_depth_image,
 
     for points in depth_points_in_rgb_frame:
         for point in points:
-            u = int(fx * point[0] / point[2] + cx + 0.5)
-            v = int(fy * point[1] / point[2] + cy + 0.5)
+            u = int(fx * point[0] / point[2] + cx)
+            v = int(fy * point[1] / point[2] + cy)
 
             height = rgb_shape[0]
             width = rgb_shape[1]
@@ -161,6 +161,8 @@ def save_colored_point_cloud_to_ply(rgb_image,
         the rgb image.
     """
 
+    depth_float = depth_image.astype(np.float32) / 1000.0 * depth_scale_mm
+
     rgb_image = cv2.undistort(rgb_image, rgb_intrinsics, rgb_distortion)
 
     if register_depth:
@@ -169,7 +171,7 @@ def save_colored_point_cloud_to_ply(rgb_image,
                    "NOTE: Make sure that the input depth_image is "
                    "registered!"))
 
-        depth_points_3d = cv2.rgbd.depthTo3d(depth_image, rgb_intrinsics)
+        depth_points_3d = cv2.rgbd.depthTo3d(depth_float, rgb_intrinsics)
 
         n_rows, n_cols, n_coord = np.shape(depth_points_3d)
 
@@ -187,8 +189,8 @@ def save_colored_point_cloud_to_ply(rgb_image,
                     point_g = rgb_image[i, j, 1]
                     point_r = rgb_image[i, j, 2]
 
-                    if (point_z > DISTANCE_LOWER_LIMIT
-                            and point_z < DISTANCE_UPPER_LIMIT):
+                    if (point_z > DISTANCE_LOWER_LIMIT and
+                            point_z < DISTANCE_UPPER_LIMIT):
                         ply_file.write((point_ply % dict(
                             x=point_x,
                             y=point_y,
@@ -209,7 +211,7 @@ def save_colored_point_cloud_to_ply(rgb_image,
                    "point cloud is organized in the order of the "
                    "depth image."))
 
-        depth_points_3d = cv2.rgbd.depthTo3d(depth_image, depth_intrinsics)
+        depth_points_3d = cv2.rgbd.depthTo3d(depth_float, depth_intrinsics)
         depth_points_in_rgb_frame = cv2.perspectiveTransform(
             depth_points_3d, extrinsics)
 
@@ -231,10 +233,10 @@ def save_colored_point_cloud_to_ply(rgb_image,
                     point_z = depth_points_in_rgb_frame[i, j, 2]
 
                     height, width, channels = rgb_image.shape
-                    if (point_z > DISTANCE_LOWER_LIMIT
-                            and point_z < DISTANCE_UPPER_LIMIT):
-                        u = int(fx * point_x / point_z + cx + 0.5)
-                        v = int(fy * point_y / point_z + cy + 0.5)
+                    if (point_z > DISTANCE_LOWER_LIMIT and
+                            point_z < DISTANCE_UPPER_LIMIT):
+                        u = int(fx * point_x / point_z + cx)
+                        v = int(fy * point_y / point_z + cy)
 
                         if (u >= 0 and u < width and v >= 0 and v < height):
                             point_b = rgb_image[v, u, 0]
