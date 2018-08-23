@@ -305,3 +305,28 @@ def create_depth_registered_folder(sensor_folder):
               depth_registered_folder)
 
     return depth_registered_folder
+
+
+def create_rectified_images_folder(sensor_folder):
+    """
+    Function that creates the folder for rectified stereo images if it does
+    not exist.
+
+    Input:
+        sensor_folder[string] - Path to the sensor folder
+
+    Output:
+        rectified_images_folder[string] - Path to the created rectified images
+        folder
+    """
+
+    rectified_images_folder = sensor_folder + '/rectified_images'
+
+    if not os.path.exists(rectified_images_folder):
+        os.makedirs(rectified_images_folder)
+
+    log.debug("Created a new rectified_images folder: \n" +
+              rectified_images_folder)
+
+    return rectified_images_folder
+

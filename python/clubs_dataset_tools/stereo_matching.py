@@ -35,6 +35,10 @@ class StereoMatchingParams:
         self.apply_wls_filter = False
         self.wls_filter_sigma_color = 0.8
         self.wls_filter_lambda = 100
+        self.wls_filter_radius = 9
+        self.wls_filter_sigma_lrc_thresh = 24
+        self.use_median_filter = False
+        self.median_filter_size = 11
 
     def read_from_yaml(self, yaml_file):
         """
@@ -67,6 +71,11 @@ class StereoMatchingParams:
         self.apply_wls_filter = stereo_params['apply_wls_filter']
         self.wls_filter_sigma_color = stereo_params['wls_filter_sigma_color']
         self.wls_filter_lambda = stereo_params['wls_filter_lambda']
+        self.wls_filter_radius = stereo_params['wls_filter_radius']
+        self.wls_filter_sigma_lrc_thresh = stereo_params[
+            'wls_filter_sigma_lrc_thresh']
+        self.use_median_filter = stereo_params['use_median_filter']
+        self.median_filter_size = stereo_params['median_filter_size']
 
 
 def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
@@ -201,23 +210,28 @@ def stereo_match(undistorted_rectified_l,
         wls_filter = cv2.ximgproc.createDisparityWLSFilter(stereo_matcher)
         wls_filter.setLambda(stereo_params.wls_filter_lambda)
         wls_filter.setSigmaColor(stereo_params.wls_filter_sigma_color)
-        filtered_image = wls_filter.filter(
+        wls_filter.setDepthDiscontinuityRadius(stereo_params.wls_filter_radius)
+        wls_filter.setLRCthresh(stereo_params.wls_filter_sigma_lrc_thresh)
+        wls_disparity = wls_filter.filter(
             disparity, uint8_undistorted_rectified_l, None, disparity_right,
             None, uint8_undistorted_rectified_r)
+
+        confidence = wls_filter.getConfidenceMap()
+        wls_disparity_float = -wls_disparity.astype(np.float32) / 16.0
+        wls_depth = baseline * focal_length / wls_disparity_float
+        wls_depth[confidence < 200] = float('nan')
+        depth_float = wls_depth
     else:
-        filtered_image = disparity
+        disparity_float = -disparity.astype(np.float32) / 16.0
+        depth_float = baseline * focal_length / disparity_float
+        depth_float[depth_float <= 0] = float('nan')
+        depth_float[depth_float == np.amax(depth_float)] = float('nan')
 
-    disparity_float = -filtered_image.astype(np.float32) / 16.0
     if stereo_params.apply_bilateral_filter:
-        disparity_float = cv2.bilateralFilter(
-            disparity_float, stereo_params.bilateral_filter_size,
-            stereo_params.bilateral_filter_sigma,
-            stereo_params.bilateral_filter_sigma)
-
-    depth_float = baseline * focal_length / disparity_float
-
-    depth_float[depth_float <= 0] = float('nan')
-    depth_float[depth_float == np.amax(depth_float)] = float('nan')
+        depth_float = cv2.bilateralFilter(depth_float,
+                                          stereo_params.bilateral_filter_size,
+                                          stereo_params.bilateral_filter_sigma,
+                                          stereo_params.bilateral_filter_sigma)
 
     depth_uint = depth_float * scale
     depth_uint = depth_uint.astype(np.uint16)
