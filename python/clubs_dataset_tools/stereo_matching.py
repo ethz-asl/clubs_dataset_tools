@@ -6,7 +6,7 @@ import cv2
 import logging as log
 
 
-class StereoMatchingParams:
+class StereoMatchingParams(object):
     """
     Stereo matching algorithm parameters.
     """
@@ -45,7 +45,8 @@ class StereoMatchingParams:
         Function that reads the stereo parameters from the yaml file.
 
         Input:
-            yaml_file - Path to the yaml file containing the stereo parameters.
+            yaml_file[string] - Path to the yaml file containing the stereo
+            parameters.
         """
 
         log.debug("Initialized StereoMatchingParams from yaml file: " +
@@ -82,26 +83,29 @@ def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
                    camera_matrix_r, dist_coeffs_r, extrinsics_r, extrinsics_t):
     """
     Function that takes in left and right image, together with their
-    intrinsic and extrinsic parameters and returns rectified and
-    undistorted images and Q matrix that maps disparity image to 3D.
+    intrinsic and extrinsic parameters and returns rectified and undistorted
+    images and Q matrix that maps disparity image to 3D.
 
     Input:
-        image_l - Left image
-        camera_matrix_l - 3x3 calibration matrix of the left image
-        dist_coeffs_l - Distortion coefficients of the left image
-        image_r - Right image
-        camera_matrix_r - 3x3 calibration matrix of the right image
-        dist_coeffs_r - Distortion coefficients of the right image
-        extrinsics_r - Extrinsics 3x3 rotation matrix
-        extrinsics_t - Extrinsics translation vector
+        image_l[np.array] - Left image
+        camera_matrix_l[np.array] - 3x3 calibration matrix of the left image
+        dist_coeffs_l[np.array] - Distortion coefficients of the left image
+        image_r[np.array] - Right image
+        camera_matrix_r[np.array] - 3x3 calibration matrix of the right image
+        dist_coeffs_r[np.array] - Distortion coefficients of the right image
+        extrinsics_r[np.array] - Extrinsics 3x3 rotation matrix
+        extrinsics_t[np.array] - Extrinsics translation vector
 
     Output:
-        rectified_l - Rectified and undistorted left image
-        rectified_r - Rectified and undistorted right image
-        disparity_to_depth_map - 4x4 perspective transformation matrix:
+        rectified_l[np.array] - Rectified and undistorted left image
+        rectified_r[np.array] - Rectified and undistorted right image
+        disparity_to_depth_map[np.array] - 4x4 perspective transformation
+        matrix:
             [X Y Z W]^t = Q * [u v disp(u,v) 1]^t
-        rotation_matrix_left - 3x3 rotation matrix of the rectified left image
-        new_calibration_left - 3x4 new calibration matrix for left image
+        rotation_matrix_left[np.array] - 3x3 rotation matrix of the rectified
+        left image
+        new_calibration_left[np.array] - 3x4 new calibration matrix for left
+        image
     """
 
     (rotation_matrix_left, rotation_matrix_right, new_calibration_left,
@@ -151,20 +155,23 @@ def stereo_match(undistorted_rectified_l,
     matcher (SGBM), to obtain disparity and depth map.
 
     Input:
-        undistorted_rectified_l - Undistorted and rectified left image
-        undistorted_rectified_r - Undistorted and rectified right image
-        baseline - Baseline between the left and right image in m
-        focal_length - Focal length of the left and right camera (cameras with
-        different focal length are not supported)
-        stereo_params - StereoMatchingParams class containing parameters for
-        the SGBM algorithm
-        scale - Scaling used to convert to uint depth image (1000 for
+        undistorted_rectified_l[np.array] - Undistorted and rectified left
+        image
+        undistorted_rectified_r[np.array] - Undistorted and rectified right
+        image
+        baseline[float] - Baseline between the left and right image in m
+        focal_length[float] - Focal length of the left and right camera
+        (cameras with different x and y focal length are not supported)
+        stereo_params[StereoMatchingParams] - StereoMatchingParams class
+        containing parameters for the SGBM algorithm
+        scale[float] - Scaling used to convert to uint depth image (1000 for
         converting m to mm)
 
     Output:
-        depth_uint - Depth image represented as a 16-bit uint image
-        depth_float - Depth image represented as a 32-bit float image
-        disparity_float - Disparity image represented as a 32-bit float image
+        depth_uint[np.array] - Depth image represented as a 16-bit uint image
+        depth_float[np.array] - Depth image represented as a 32-bit float image
+        disparity_float[np.array] - Disparity image represented as a 32-bit
+        float image
     """
 
     stereo_matcher = cv2.StereoSGBM_create(

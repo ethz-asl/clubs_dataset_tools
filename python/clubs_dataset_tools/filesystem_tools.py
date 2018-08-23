@@ -5,6 +5,7 @@ import cv2
 import libtiff
 import logging as log
 import glob
+import csv
 
 
 def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):
@@ -12,12 +13,12 @@ def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):
     Function that reads all the images from a list of file paths.
 
     Input:
-        image_files - List containing absolute image full paths
-        image_extension - Extension of the images to be used
-        image_type - Opencv image type
+        image_files[list(string)] - List containing image full paths
+        image_extension[string] - Extension of the images to be used
+        image_type[int] - Opencv image type
 
     Output:
-        images - List of numpy arrays containing the images
+        images[list(np.array)] - List of numpy arrays containing the images
     """
 
     images = []
@@ -49,11 +50,12 @@ def find_images_in_folder(image_folder, image_extension='.png'):
     Function that returns image filenames.
 
     Input:
-        image_folder - Path to the image folder
-        image_extension - Extension of the images to search for
+        image_folder[string] - Path to the image folder
+        image_extension[string] - Extension of the images to search for,
+        '.png' by default
 
     Output:
-        images - List with image filenames
+        images[list(string)] - List with image filenames
     """
 
     images = []
@@ -75,13 +77,15 @@ def find_ir_image_folders(input_folder):
     exist, for all the sensors. Path is relative to the input folder path.
 
     Input:
-        input_folder - Path to specific object/box folder
+        input_folder[string] - Path to specific object/box folder
 
     Output:
-        d415_image_folders - Realsense d415 root, ir left and right image
-        folder path relative to the input_folder and sensor root folder
-        d435_image_folders - Realsense d435 root, ir left and right image
-        folder path relative to the input_folder and sensor root folder
+        d415_image_folders[list(string)] - Realsense d415 root, ir left and
+        right image folder path relative to the input_folder and sensor root
+        folder
+        d435_image_folders[list(string)] - Realsense d435 root, ir left and
+        right image folder path relative to the input_folder and sensor root
+        folder
     """
     expected_number_of_folders = 3
 
@@ -124,16 +128,16 @@ def find_rgb_d_image_folders(input_folder, use_stereo_depth=False):
     the sensors. Path is relative to the input folder path.
 
     Input:
-        input_folder - Path to specific object/box folder
-        use_stereo_depth - If True, depth from stereo will be used
+        input_folder[string] - Path to specific object/box folder
+        use_stereo_depth[bool] - If True, depth from stereo will be used
 
     Output:
-        ps_image_folders - Primesense root, rgb and depth image folder path
-        relative to the input_folder
-        d415_image_folders - Realsense d415 root, rgb and depth image folder
-        path relative to the input_folder
-        d435_image_folders - Realsense d435 root, rgb and depth image folder
-        path relative to the input_folder
+        ps_image_folders[list(string)] - Primesense root, rgb and depth image
+        folder path relative to the input_folder
+        d415_image_folders[list(string)] - Realsense d415 root, rgb and depth
+        image folder path relative to the input_folder
+        d435_image_folders[list(string)] - Realsense d435 root, rgb and depth
+        image folder path relative to the input_folder
     """
     expected_number_of_folders = 3
 
@@ -196,11 +200,12 @@ def find_all_folders(dataset_folder):
     Function that returns folder names for object and box scenes.
 
     Input:
-        dataset_folder - Path to the dataset folder
+        dataset_folder[string] - Path to the dataset folder
 
     Output:
-        folders_objects - Paths of folders containing object scenes
-        folders_boxes - Paths of folders containing box scenes
+        folders_objects[list(string)] - Paths of folders containing object
+        scenes
+        folders_boxes[list(string)] - Paths of folders containing box scenes
     """
 
     folders_objects = glob.glob(dataset_folder + '/object_scenes/' +
@@ -220,11 +225,11 @@ def compare_image_names(image_list1, image_list2):
     (timestamps).
 
     Input:
-        image_list1 - List of names from the first image set
-        image_list2 - List of names from the second image set
+        image_list1[list(string)] - List of names from the first image set
+        image_list2[list(string)] - List of names from the second image set
 
     Output:
-        timestamps - Timestamps found in both image lists
+        timestamps[list(int)] - Timestamps found in both image lists
     """
 
     timestamps_list1 = [image[:10] for image in image_list1]
@@ -247,10 +252,10 @@ def create_stereo_depth_folder(sensor_folder):
     exist.
 
     Input:
-        sensor_folder - Path to the sensor folder
+        sensor_folder[string] - Path to the sensor folder
 
     Output:
-        stereo_depth_folder - Path to the created stereo depth folder
+        stereo_depth_folder[string] - Path to the created stereo depth folder
     """
 
     stereo_depth_folder = sensor_folder + '/stereo_depth_images'
@@ -268,10 +273,10 @@ def create_point_cloud_folder(sensor_folder):
     Function that creates the folder for point clouds if it does not exist.
 
     Input:
-        sensor_folder - Path to the sensor folder
+        sensor_folder[string] - Path to the sensor folder
 
     Output:
-        point_cloud_folder - Path to the created point_cloud folder
+        point_cloud_folder[string] - Path to the created point cloud folder
     """
 
     point_cloud_folder = sensor_folder + '/point_clouds'
@@ -290,10 +295,11 @@ def create_depth_registered_folder(sensor_folder):
     not exist.
 
     Input:
-        sensor_folder - Path to the sensor folder
+        sensor_folder[string] - Path to the sensor folder
 
     Output:
-        depth_registered_folder - Path to the created point_cloud folder
+        depth_registered_folder[string] - Path to the created depth registered
+        folder
     """
 
     depth_registered_folder = sensor_folder + '/registered_depth_images'
@@ -330,3 +336,43 @@ def create_rectified_images_folder(sensor_folder):
 
     return rectified_images_folder
 
+
+def read_from_csv_file(file_path):
+    """
+    Function that reads a csv file and returns a list of tuples where each
+    tuple in the list contains one row of the file.
+
+    Input:
+        file_path[string] - Path to the csv file
+
+    Output:
+        output[list(tuple(float))] - List of tuples which contain rows of the
+        csv file
+    """
+
+    output = []
+
+    with open(file_path, 'rb') as csvfile:
+        file_reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        for row in file_reader:
+            split_row = row[0].split(',')
+            output.append(map(float, split_row))
+
+    return output
+
+
+def save_to_csv_file(file_path, input):
+    """
+    Function that writes a csv file from a list of tuples, where each tuple is
+    stored in one row.
+
+    Input:
+        file_path[string] - Path to the csv file
+        input[list(tuple(float))] - List of numpy arrays which should be saved
+        as rows in the csv file
+
+    """
+
+    with open(file_path, 'wb') as csvfile:
+        file_writer = csv.writer(csvfile, delimiter=',', quotechar='|')
+        file_writer.writerows(input)

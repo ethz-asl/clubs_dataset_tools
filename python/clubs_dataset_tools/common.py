@@ -44,8 +44,8 @@ class CalibrationParams(object):
         Function that reads the calibration parameters from the yaml file.
 
         Input:
-            yaml_file - Path to the yaml file containing the calibration
-            parameters.
+            yaml_file[string] - Path to the yaml file containing the
+            calibration parameters.
         """
 
         log.debug("Initialized CalibrationParams from yaml file: " + yaml_file)

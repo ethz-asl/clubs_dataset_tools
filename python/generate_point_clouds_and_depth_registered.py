@@ -26,12 +26,12 @@ def generate_point_cloud(scene_folder,
     Function that generates point cloud from RGB and Depth images.
 
     Input:
-        scene_folder - Path to the scene folder
-        sensor_folder - List containing folder names for rgb and depth
-        image, as well as the sensor root folder
-        calib_params - Calibration parameters from the camera
-        (CalibrationParams class)
-        use_stereo_depth - If set to True, stereo depth will be used and
+        scene_folder[string] - Path to the scene folder
+        sensor_folder[list(string)] - List containing folder names for rgb and
+        depth image, as well as the sensor root folder
+        calib_params[CalibrationParams] - Calibration parameters from the
+        camera
+        use_stereo_depth[bool] - If set to True, stereo depth will be used and
         therefore generated stereo depth intrinsics instead of device depth
         intrinsics
     """
@@ -69,9 +69,8 @@ def generate_point_cloud(scene_folder,
                 depth_images[i], calib_params.z_scaling,
                 calib_params.depth_scale_mm)
             if save_depth_registered:
-                depth_registerd_path = (
-                    depth_registered_folder + '/' + timestamps[i] +
-                    '_registered_depth.png')
+                depth_registerd_path = (depth_registered_folder + '/' +
+                                        timestamps[i] + '_registered_depth.png')
                 if use_stereo_depth:
                     float_depth_reg, uint_depth_reg = save_register_depth_image(
                         float_depth_image, calib_params.rgb_intrinsics,
@@ -196,8 +195,7 @@ if __name__ == '__main__':
             log.debug("Processing both box and object scenes.")
             used_scenes = object_scenes + box_scenes
 
-        progress_bar = tqdm(
-            total=len(used_scenes) * 3, desc="Overall Progress")
+        progress_bar = tqdm(total=len(used_scenes) * 3, desc="Overall Progress")
         for i in range(len(used_scenes)):
             scene = used_scenes[i]
             log.debug("Processing " + str(scene))
