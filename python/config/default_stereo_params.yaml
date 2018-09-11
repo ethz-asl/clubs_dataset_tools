@@ -1,6 +1,6 @@
 min_disparity: 32
 num_disparities: 256
-block_size: 7
+block_size: 15
 p1: 400
 p2: 1600
 disp_12_max_diff: -1
@@ -18,4 +18,4 @@ wls_filter_lambda: 20000
 wls_filter_radius: 5
 wls_filter_sigma_lrc_thresh: 24
 use_median_filter: True
-median_filter_size: 15
+median_filter_size: 11

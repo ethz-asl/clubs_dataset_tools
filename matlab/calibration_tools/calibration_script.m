@@ -157,7 +157,7 @@ end
 % Output Hand-Eye calibration poses for individual camera.
 for iCam = 1 : numberOfCameras
     disp(['Outputing hand-eye calibration data for camera ' num2str(iCam) ' ...']);
-    createHandEyeData ('../data/poses.csv', imagesUsedArray{iCam}, ...
+    createHandEyeData ('../data/W_H_poses_ht.csv', imagesUsedArray{iCam}, ...
         calibrationParameters{iCam}, ['../results/cam' num2str(iCam) '/']);
 end
 

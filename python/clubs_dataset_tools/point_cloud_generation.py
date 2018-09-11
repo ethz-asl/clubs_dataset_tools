@@ -48,7 +48,7 @@ def convert_depth_uint_to_float(uint_depth_image,
                "depth_scaling"))
 
     return (
-        uint_depth_image / 1000 * depth_scale_mm * z_scaling).astype('float')
+        uint_depth_image / 1000.0 * depth_scale_mm * z_scaling).astype('float')
 
 
 def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
@@ -59,7 +59,8 @@ def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
     Input:
         float_depth_image[np.array] - Depth image of type float
         depth_scale_mm[float] - Conversion factor for depth (e.g. 1 means that
-        value of 1000 in uint16 depth image corresponds to 1m)
+        value of 1000 in uint16 depth image corresponds to 1.0 in float depth
+        image and to 1m in real world)
 
     Output:
         uint_depth_image[np.array] - Depth image of type uint16
@@ -67,71 +68,7 @@ def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
 
     log.debug("Converting float depth to uint16 and applying depth_scaling")
 
-    return (float_depth_image * 1000 / depth_scale_mm).astype('uint16')
-
-
-def save_register_depth_image(float_depth_image,
-                              rgb_intrinsics,
-                              depth_intrinsics,
-                              extrinsics,
-                              rgb_shape,
-                              registered_depth_path,
-                              depth_scale_mm=1.0):
-    """
-    Function that registers depth image to rgb image and saves the resulting
-    depth image. Some of the points are lost due to discretization errors.
-
-    Input:
-        float_depth_image[np.array] - Depth image converted to float type
-        rgb_intrinsics[np.array] - Intrinsic parameters of the rgb camera
-        depth_intrinsics[np.array] - Intrinsic parameters of the depth camera
-        extrinsics[np.array] - Extrinsic parameters between rgb and depth
-        cameras
-        rgb_shape[tuple(int)] - Image size of rgb image (rows, columns)
-        registered_depth_path[np.array] - Path where to store the image
-        including file name and extension
-        depth_scale_mm[float] - Conversion factor for depth (e.g. 1 means that
-        value of 1000 in uint16 depth image corresponds to 1.0 in float depth
-        image and to 1m in real world)
-
-    Output:
-        float_depth_registered[np.array] - Depth image registered to rgb, float
-        type
-        uint_depth_registered[np.array] - Depth image registered to rgb, uint16
-        type
-    """
-
-    depth_points_3d = cv2.rgbd.depthTo3d(float_depth_image, depth_intrinsics)
-    depth_points_in_rgb_frame = cv2.perspectiveTransform(
-        depth_points_3d, extrinsics)
-
-    fx = rgb_intrinsics[0, 0]
-    fy = rgb_intrinsics[1, 1]
-    cx = rgb_intrinsics[0, 2]
-    cy = rgb_intrinsics[1, 2]
-
-    float_depth_registered = np.zeros(rgb_shape, dtype='float')
-
-    log.debug("Computing the registered depth image.")
-
-    for points in depth_points_in_rgb_frame:
-        for point in points:
-            u = int(fx * point[0] / point[2] + cx)
-            v = int(fy * point[1] / point[2] + cy)
-
-            height = rgb_shape[0]
-            width = rgb_shape[1]
-            if (u >= 0 and u < width and v >= 0 and v < height):
-                float_depth_registered[v, u] = point[2]
-
-    uint_depth_registered = convert_depth_float_to_uint(float_depth_registered)
-    kernel = np.ones((5, 5), np.uint16)
-    uint_depth_registered = cv2.morphologyEx(uint_depth_registered,
-                                             cv2.MORPH_CLOSE, kernel)
-
-    cv2.imwrite(registered_depth_path, uint_depth_registered)
-
-    return float_depth_registered, uint_depth_registered
+    return (float_depth_image * 1000.0 / depth_scale_mm).astype('uint16')
 
 
 def save_colored_point_cloud_to_ply(rgb_image,
@@ -141,15 +78,14 @@ def save_colored_point_cloud_to_ply(rgb_image,
                                     depth_intrinsics,
                                     extrinsics,
                                     cloud_path,
-                                    depth_scale_mm=1.0,
-                                    register_depth=False):
+                                    use_registered_depth=False):
     """
     Function that registers depth image to rgb image. Some of the points are
     lost due to discretization errors.
 
     Input:
         rgb_image[np.array] - Input rgb image
-        depth_image[np.array] - Input depth image
+        depth_image[np.array] - Input float depth image in m
         rgb_intrinsics[np.array] - Intrinsic parameters of the rgb camera
         rgb_distortion[np.array] - Distortion parameters of the rgb camera
         depth_intrinsics[np.array] - Intrinsic parameters of the depth camera
@@ -158,25 +94,20 @@ def save_colored_point_cloud_to_ply(rgb_image,
         rgb_shape[tuple(int)] - Image size of rgb image (rows, columns)
         cloud_path[string] - Path where to store the point cloud, including
         file name and extension
-        depth_scale_mm[float] - Conversion factor for depth (e.g. 1 means that
-        value of 1000 in uint16 depth image corresponds to 1.0 in float depth
-        image and to 1m in real world)
-        register_depth[bool] - If True, registered depth images will be used
-        and therefore the resulting point cloud will be organized in the order
-        of the rgb image.
+        use_registered_depth[bool] - If True, registered depth images will be
+        used and therefore the resulting point cloud will be organized in the
+        order of the rgb image.
     """
-
-    depth_float = depth_image.astype(np.float32) / 1000.0 * depth_scale_mm
 
     rgb_image = cv2.undistort(rgb_image, rgb_intrinsics, rgb_distortion)
 
-    if register_depth:
+    if use_registered_depth:
         log.debug(("Using depth_registered image, therefore the resulting "
                    "point cloud is organized in the order of the rgb image."
                    "NOTE: Make sure that the input depth_image is "
                    "registered!"))
 
-        depth_points_3d = cv2.rgbd.depthTo3d(depth_float, rgb_intrinsics)
+        depth_points_3d = cv2.rgbd.depthTo3d(depth_image, rgb_intrinsics)
 
         n_rows, n_cols, n_coord = np.shape(depth_points_3d)
 
@@ -216,7 +147,7 @@ def save_colored_point_cloud_to_ply(rgb_image,
                    "point cloud is organized in the order of the "
                    "depth image."))
 
-        depth_points_3d = cv2.rgbd.depthTo3d(depth_float, depth_intrinsics)
+        depth_points_3d = cv2.rgbd.depthTo3d(depth_image, depth_intrinsics)
         depth_points_in_rgb_frame = cv2.perspectiveTransform(
             depth_points_3d, extrinsics)
 

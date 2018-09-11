@@ -8,19 +8,15 @@ from tqdm import tqdm
 
 from clubs_dataset_tools.filesystem_tools import (
     read_images, find_images_in_folder, find_all_folders,
-    find_rgb_d_image_folders, compare_image_names, create_point_cloud_folder,
-    create_depth_registered_folder)
+    find_rgb_d_image_folders, compare_image_names, create_point_cloud_folder)
 from clubs_dataset_tools.common import (CalibrationParams)
 from clubs_dataset_tools.point_cloud_generation import (
-    convert_depth_uint_to_float, save_register_depth_image,
-    save_colored_point_cloud_to_ply)
+    convert_depth_uint_to_float, save_colored_point_cloud_to_ply)
 
 
 def generate_point_cloud(scene_folder,
                          sensor_folder,
                          calib_params,
-                         save_point_clouds,
-                         save_depth_registered,
                          use_stereo_depth=False):
     """
     Function that generates point cloud from RGB and Depth images.
@@ -55,62 +51,38 @@ def generate_point_cloud(scene_folder,
             image_paths_rgb, image_type=cv2.IMREAD_ANYCOLOR)
         depth_images = read_images(image_paths_depth, image_type=cv2.CV_16UC1)
 
-        if save_point_clouds:
-            point_cloud_folder = create_point_cloud_folder(scene_folder +
-                                                           sensor_folder[2])
-        if save_depth_registered:
-            depth_registered_folder = create_depth_registered_folder(
-                scene_folder + sensor_folder[2])
-
+        point_cloud_folder = create_point_cloud_folder(scene_folder +
+                                                       sensor_folder[2])
         stereo_bar = tqdm(
-            total=len(rgb_images), desc="PointCloud/DepthRegistered progress")
+            total=len(rgb_images),
+            desc="PointCloud generation " + sensor_folder[2])
         for i in range(len(rgb_images)):
             float_depth_image = convert_depth_uint_to_float(
                 depth_images[i], calib_params.z_scaling,
                 calib_params.depth_scale_mm)
-            if save_depth_registered:
-                depth_registerd_path = (depth_registered_folder + '/' +
-                                        timestamps[i] + '_registered_depth.png')
-                if use_stereo_depth:
-                    float_depth_reg, uint_depth_reg = save_register_depth_image(
-                        float_depth_image, calib_params.rgb_intrinsics,
-                        calib_params.ir1_intrinsics,
-                        calib_params.depth_extrinsics,
-                        (calib_params.rgb_height, calib_params.rgb_width),
-                        depth_registerd_path, calib_params.depth_scale_mm)
-                else:
-                    float_depth_reg, uint_depth_reg = save_register_depth_image(
-                        float_depth_image, calib_params.rgb_intrinsics,
-                        calib_params.depth_intrinsics,
-                        calib_params.depth_extrinsics,
-                        (calib_params.rgb_height, calib_params.rgb_width),
-                        depth_registerd_path, calib_params.depth_scale_mm)
 
-            if save_point_clouds:
-                point_cloud_path = (point_cloud_folder + '/' + timestamps[i] +
-                                    '_point_cloud.ply')
-                if use_stereo_depth:
-                    save_colored_point_cloud_to_ply(
-                        rgb_images[i],
-                        float_depth_image,
-                        calib_params.rgb_intrinsics,
-                        calib_params.rgb_distortion_coeffs,
-                        calib_params.ir1_intrinsics,
-                        calib_params.depth_extrinsics,
-                        point_cloud_path,
-                        calib_params.depth_scale_mm,
-                        register_depth=False)
-                else:
-                    save_colored_point_cloud_to_ply(
-                        rgb_images[i],
-                        float_depth_image,
-                        calib_params.rgb_intrinsics,
-                        calib_params.rgb_distortion_coeffs,
-                        calib_params.depth_intrinsics,
-                        calib_params.depth_extrinsics,
-                        point_cloud_path,
-                        calib_params.depth_scale_mm,
-                        register_depth=False)
+            point_cloud_path = (
+                point_cloud_folder + '/' + timestamps[i] + '_point_cloud.ply')
+            if use_stereo_depth:
+                save_colored_point_cloud_to_ply(
+                    rgb_images[i],
+                    float_depth_image,
+                    calib_params.rgb_intrinsics,
+                    calib_params.rgb_distortion_coeffs,
+                    calib_params.ir1_intrinsics,
+                    calib_params.depth_extrinsics,
+                    point_cloud_path,
+                    use_registered_depth=False)
+            else:
+                save_colored_point_cloud_to_ply(
+                    rgb_images[i],
+                    float_depth_image,
+                    calib_params.rgb_intrinsics,
+                    calib_params.rgb_distortion_coeffs,
+                    calib_params.depth_intrinsics,
+                    calib_params.depth_extrinsics,
+                    point_cloud_path,
+                    use_registered_depth=False)
             stereo_bar.update()
         stereo_bar.close()
     else:
@@ -160,15 +132,7 @@ if __name__ == '__main__':
         action='store_true',
         help=("If this flag is set, depth from stereo will be used "
               "for cloud generation. Make sure to pass in the correct "
-              "calibration file."))
-    parser.add_argument(
-        '--save_depth_registered',
-        action='store_true',
-        help="If this flag is set, registered depth will be saved.")
-    parser.add_argument(
-        '--save_point_clouds',
-        action='store_true',
-        help="If this flag is set, point clouds will be saved.")
+              "calibration file and that stereo depth images exist."))
     parser.add_argument(
         '--log',
         type=str,
@@ -205,23 +169,19 @@ if __name__ == '__main__':
 
             calib_params.read_from_yaml(args.ps_calib_file)
             if ps_folder != []:
-                generate_point_cloud(scene, ps_folder, calib_params,
-                                     args.save_point_clouds,
-                                     args.save_depth_registered)
+                generate_point_cloud(scene, ps_folder, calib_params)
             progress_bar.update()
 
             calib_params.read_from_yaml(args.d415_calib_file)
             if d415_folder != []:
-                generate_point_cloud(
-                    scene, d415_folder, calib_params, args.save_point_clouds,
-                    args.save_depth_registered, args.use_stereo_depth)
+                generate_point_cloud(scene, d415_folder, calib_params,
+                                     args.use_stereo_depth)
             progress_bar.update()
 
             calib_params.read_from_yaml(args.d435_calib_file)
             if d435_folder != []:
-                generate_point_cloud(
-                    scene, d435_folder, calib_params, args.save_point_clouds,
-                    args.save_depth_registered, args.use_stereo_depth)
+                generate_point_cloud(scene, d435_folder, calib_params,
+                                     args.use_stereo_depth)
             progress_bar.update()
         progress_bar.close()
     elif args.scene_folder is not None:
@@ -233,20 +193,16 @@ if __name__ == '__main__':
 
         calib_params.read_from_yaml(args.ps_calib_file)
         if ps_folder != []:
-            generate_point_cloud(scene, ps_folder, calib_params,
-                                 args.save_point_clouds,
-                                 args.save_depth_registered)
+            generate_point_cloud(scene, ps_folder, calib_params)
 
         calib_params.read_from_yaml(args.d415_calib_file)
         if d415_folder != []:
-            generate_point_cloud(
-                scene, d415_folder, calib_params, args.save_point_clouds,
-                args.save_depth_registered, args.use_stereo_depth)
+            generate_point_cloud(scene, d415_folder, calib_params,
+                                 args.use_stereo_depth)
 
         calib_params.read_from_yaml(args.d435_calib_file)
         if d435_folder != []:
-            generate_point_cloud(
-                scene, d435_folder, calib_params, args.save_point_clouds,
-                args.save_depth_registered, args.use_stereo_depth)
+            generate_point_cloud(scene, d435_folder, calib_params,
+                                 args.use_stereo_depth)
     else:
         parser.print_help()
