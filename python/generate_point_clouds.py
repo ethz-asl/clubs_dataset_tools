@@ -134,6 +134,12 @@ if __name__ == '__main__':
               "for cloud generation. Make sure to pass in the correct "
               "calibration file and that stereo depth images exist."))
     parser.add_argument(
+        '--use_registered_depth',
+        action='store_true',
+        help=("If this flag is set, registered depth will be used "
+              "for cloud generation. Make sure that the registered depth "
+              "images exist."))
+    parser.add_argument(
         '--log',
         type=str,
         default='CRITICAL',
@@ -165,7 +171,7 @@ if __name__ == '__main__':
             log.debug("Processing " + str(scene))
 
             ps_folder, d415_folder, d435_folder = find_rgb_d_image_folders(
-                scene, args.use_stereo_depth)
+                scene, args.use_stereo_depth, args.use_registered_depth)
 
             calib_params.read_from_yaml(args.ps_calib_file)
             if ps_folder != []:
@@ -189,7 +195,7 @@ if __name__ == '__main__':
         log.debug("Processing single scene " + str(scene))
 
         ps_folder, d415_folder, d435_folder = find_rgb_d_image_folders(
-            scene, args.use_stereo_depth)
+            scene, args.use_stereo_depth, args.use_registered_depth)
 
         calib_params.read_from_yaml(args.ps_calib_file)
         if ps_folder != []:
