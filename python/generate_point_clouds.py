@@ -17,7 +17,8 @@ from clubs_dataset_tools.point_cloud_generation import (
 def generate_point_cloud(scene_folder,
                          sensor_folder,
                          calib_params,
-                         use_stereo_depth=False):
+                         use_stereo_depth=False,
+                         use_registered_depth=False):
     """
     Function that generates point cloud from RGB and Depth images.
 
@@ -30,6 +31,8 @@ def generate_point_cloud(scene_folder,
         use_stereo_depth[bool] - If set to True, stereo depth will be used and
         therefore generated stereo depth intrinsics instead of device depth
         intrinsics
+        use_registered_depth[bool] - If set to True, registered depth will be
+        used
     """
 
     images_rgb = find_images_in_folder(scene_folder + sensor_folder[0])
@@ -65,24 +68,19 @@ def generate_point_cloud(scene_folder,
                 point_cloud_folder + '/' + timestamps[i] + '_point_cloud.ply')
             if use_stereo_depth:
                 save_colored_point_cloud_to_ply(
-                    rgb_images[i],
-                    float_depth_image,
+                    rgb_images[i], float_depth_image,
                     calib_params.rgb_intrinsics,
                     calib_params.rgb_distortion_coeffs,
-                    calib_params.ir1_intrinsics,
-                    calib_params.depth_extrinsics,
-                    point_cloud_path,
-                    use_registered_depth=False)
+                    calib_params.ir1_intrinsics, calib_params.depth_extrinsics,
+                    point_cloud_path, use_registered_depth)
             else:
                 save_colored_point_cloud_to_ply(
-                    rgb_images[i],
-                    float_depth_image,
+                    rgb_images[i], float_depth_image,
                     calib_params.rgb_intrinsics,
                     calib_params.rgb_distortion_coeffs,
                     calib_params.depth_intrinsics,
-                    calib_params.depth_extrinsics,
-                    point_cloud_path,
-                    use_registered_depth=False)
+                    calib_params.depth_extrinsics, point_cloud_path,
+                    use_registered_depth)
             stereo_bar.update()
         stereo_bar.close()
     else:
