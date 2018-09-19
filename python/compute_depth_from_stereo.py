@@ -86,15 +86,15 @@ def compute_stereo_depth(scene_folder,
                 calib_params.extrinsics_t[0],
                 new_calibration_left[0, 0],
                 stereo_params,
+                sensor_folder[2][1:],
                 scale=10000.0)
 
             zero_distortion = np.array([0, 0, 0, 0, 0])
             map_l1, map_l2 = cv2.initUndistortRectifyMap(
                 new_calibration_left[:3, :3], zero_distortion,
                 np.linalg.inv(rotation_matrix_left),
-                new_calibration_left[:3, :3], depth_uint.shape[::-1],
+                new_calibration_left[:3, :3], depth_float.shape[::-1],
                 cv2.CV_16SC2)
-            depth_uint = cv2.remap(depth_uint, map_l1, map_l2, cv2.INTER_LINEAR)
             depth_float = cv2.remap(depth_float, map_l1, map_l2,
                                     cv2.INTER_LINEAR)
 

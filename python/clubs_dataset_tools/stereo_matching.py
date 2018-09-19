@@ -18,11 +18,16 @@ class StereoMatchingParams(object):
 
         log.debug("Initialized StereoMatchingParams with default values.")
 
-        self.min_disparity = 15
-        self.num_disparities = 272
-        self.block_size = 25
-        self.p1 = 150
-        self.p2 = 520
+        self.d415_min_disparity = 15
+        self.d415_num_disparities = 272
+        self.d415_block_size = 25
+        self.d415_p1 = 150
+        self.d415_p2 = 520
+        self.d435_min_disparity = 15
+        self.d435_num_disparities = 272
+        self.d435_block_size = 25
+        self.d435_p1 = 150
+        self.d435_p2 = 520
         self.disp_12_max_diff = -1
         self.pre_filter_cap = 10
         self.uniqueness_ratio = 30
@@ -55,11 +60,16 @@ class StereoMatchingParams(object):
         with open(yaml_file, 'r') as file_pointer:
             stereo_params = yaml.load(file_pointer)
 
-        self.min_disparity = stereo_params['min_disparity']
-        self.num_disparities = stereo_params['num_disparities']
-        self.block_size = stereo_params['block_size']
-        self.p1 = stereo_params['p1']
-        self.p2 = stereo_params['p2']
+        self.d415_min_disparity = stereo_params['d415_min_disparity']
+        self.d415_num_disparities = stereo_params['d415_num_disparities']
+        self.d415_block_size = stereo_params['d415_block_size']
+        self.d415_p1 = stereo_params['d415_p1']
+        self.d415_p2 = stereo_params['d415_p2']
+        self.d435_min_disparity = stereo_params['d435_min_disparity']
+        self.d435_num_disparities = stereo_params['d435_num_disparities']
+        self.d435_block_size = stereo_params['d435_block_size']
+        self.d435_p1 = stereo_params['d435_p1']
+        self.d435_p2 = stereo_params['d435_p2']
         self.disp_12_max_diff = stereo_params['disp_12_max_diff']
         self.pre_filter_cap = stereo_params['pre_filter_cap']
         self.uniqueness_ratio = stereo_params['uniqueness_ratio']
@@ -149,6 +159,7 @@ def stereo_match(undistorted_rectified_l,
                  baseline,
                  focal_length,
                  stereo_params,
+                 sensor_name,
                  scale=1000.0):
     """
     Function that performs stereo matching using semi global block
@@ -164,6 +175,7 @@ def stereo_match(undistorted_rectified_l,
         (cameras with different x and y focal length are not supported)
         stereo_params[StereoMatchingParams] - StereoMatchingParams class
         containing parameters for the SGBM algorithm
+        sensor_name[string] - Name of the sensor
         scale[float] - Scaling used to convert to uint depth image (1000 for
         converting m to mm)
 
@@ -174,12 +186,25 @@ def stereo_match(undistorted_rectified_l,
         float image
     """
 
-    stereo_matcher = cv2.StereoSGBM_create(
-        stereo_params.min_disparity, stereo_params.num_disparities,
-        stereo_params.block_size, stereo_params.p1, stereo_params.p2,
-        stereo_params.disp_12_max_diff, stereo_params.pre_filter_cap,
-        stereo_params.uniqueness_ratio, stereo_params.speckle_window_size,
-        stereo_params.speckle_range, stereo_params.mode)
+    if sensor_name == "realsense_d415":
+        stereo_matcher = cv2.StereoSGBM_create(
+            stereo_params.d415_min_disparity,
+            stereo_params.d415_num_disparities, stereo_params.d415_block_size,
+            stereo_params.d415_p1, stereo_params.d415_p2,
+            stereo_params.disp_12_max_diff, stereo_params.pre_filter_cap,
+            stereo_params.uniqueness_ratio, stereo_params.speckle_window_size,
+            stereo_params.speckle_range, stereo_params.mode)
+    elif sensor_name == "realsense_d435":
+        stereo_matcher = cv2.StereoSGBM_create(
+            stereo_params.d435_min_disparity,
+            stereo_params.d435_num_disparities, stereo_params.d435_block_size,
+            stereo_params.d435_p1, stereo_params.d435_p2,
+            stereo_params.disp_12_max_diff, stereo_params.pre_filter_cap,
+            stereo_params.uniqueness_ratio, stereo_params.speckle_window_size,
+            stereo_params.speckle_range, stereo_params.mode)
+    else:
+        log.error("\nUnknown sensor!")
+        return
 
     if undistorted_rectified_l.dtype == 'uint8':
         uint8_undistorted_rectified_l = undistorted_rectified_l
@@ -204,13 +229,30 @@ def stereo_match(undistorted_rectified_l,
                                        uint8_undistorted_rectified_r)
 
     if stereo_params.apply_wls_filter:
-        right_macher = cv2.StereoSGBM_create(
-            -(stereo_params.min_disparity + stereo_params.num_disparities) + 1,
-            stereo_params.num_disparities, stereo_params.block_size,
-            stereo_params.p1, stereo_params.p2, stereo_params.disp_12_max_diff,
-            stereo_params.pre_filter_cap, stereo_params.uniqueness_ratio,
-            stereo_params.speckle_window_size, stereo_params.speckle_range,
-            stereo_params.mode)
+        if sensor_name == "realsense_d415":
+            right_macher = cv2.StereoSGBM_create(
+                -(stereo_params.d415_min_disparity +
+                  stereo_params.d415_num_disparities) + 1,
+                stereo_params.d415_num_disparities,
+                stereo_params.d415_block_size, stereo_params.d415_p1,
+                stereo_params.d415_p2, stereo_params.disp_12_max_diff,
+                stereo_params.pre_filter_cap, stereo_params.uniqueness_ratio,
+                stereo_params.speckle_window_size, stereo_params.speckle_range,
+                stereo_params.mode)
+        elif sensor_name == "realsense_d435":
+            right_macher = cv2.StereoSGBM_create(
+                -(stereo_params.d435_min_disparity +
+                  stereo_params.d435_num_disparities) + 1,
+                stereo_params.d435_num_disparities,
+                stereo_params.d435_block_size, stereo_params.d435_p1,
+                stereo_params.d435_p2, stereo_params.disp_12_max_diff,
+                stereo_params.pre_filter_cap, stereo_params.uniqueness_ratio,
+                stereo_params.speckle_window_size, stereo_params.speckle_range,
+                stereo_params.mode)
+        else:
+            log.error("\nUnknown sensor!")
+            return
+
         disparity_right = right_macher.compute(uint8_undistorted_rectified_r,
                                                uint8_undistorted_rectified_l)
 
