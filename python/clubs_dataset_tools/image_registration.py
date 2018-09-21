@@ -2,30 +2,31 @@ import cv2
 import logging as log
 import numpy as np
 
+from clubs_dataset_tools.point_cloud_generation import (
+    convert_depth_float_to_uint)
 
-def save_register_depth_image(float_depth_image,
-                              rgb_intrinsics,
-                              depth_intrinsics,
-                              extrinsics,
-                              rgb_shape,
-                              registered_depth_path,
-                              depth_scale_mm=1.0):
+
+def register_depth_image(float_depth_image,
+                         rgb_intrinsics,
+                         depth_intrinsics,
+                         extrinsics,
+                         rgb_shape,
+                         depth_scale_mm=1.0):
     """
-    Function that registers depth image to rgb image and saves the resulting
-    depth image. Some of the points are lost due to discretization errors.
+    Function that registers a depth image to an rgb image. Registered depth
+    image has the same size as the original rgb image. Rgb intrinsics are used
+    to convert the registered depth image to 3D points.
 
     Input:
-        float_depth_image[np.array] - Depth image converted to float type
+        float_depth_image[np.array] - Float depth image
         rgb_intrinsics[np.array] - Intrinsic parameters of the rgb camera
         depth_intrinsics[np.array] - Intrinsic parameters of the depth camera
-        extrinsics[np.array] - Extrinsic parameters between rgb and depth
-        cameras
-        rgb_shape[tuple(int)] - Image size of rgb image (rows, columns)
-        registered_depth_path[np.array] - Path where to store the image
-        including file name and extension
-        depth_scale_mm[float] - Conversion factor for depth (e.g. 1 means that
-        value of 1000 in uint16 depth image corresponds to 1.0 in float depth
-        image and to 1m in real world)
+        extrinsics[np.array] - Extrinsic parameters between the rgb and the
+        depth cameras
+        rgb_shape[tuple(int)] - Image size of the rgb image (rows, columns)
+        depth_scale_mm[float] - Conversion factor for the depth (e.g. 1 means
+        that value of 1000 in uint16 depth image corresponds to 1.0 in float
+        depth image and to 1m in real world)
 
     Output:
         float_depth_registered[np.array] - Depth image registered to rgb, float
@@ -57,11 +58,10 @@ def save_register_depth_image(float_depth_image,
             if (u >= 0 and u < width and v >= 0 and v < height):
                 float_depth_registered[v, u] = point[2]
 
-    uint_depth_registered = convert_depth_float_to_uint(float_depth_registered)
-    kernel = np.ones((5, 5), np.uint16)
+    uint_depth_registered = convert_depth_float_to_uint(float_depth_registered,
+                                                        depth_scale_mm)
+    kernel = np.ones((3, 3), np.uint16)
     uint_depth_registered = cv2.morphologyEx(uint_depth_registered,
                                              cv2.MORPH_CLOSE, kernel)
-
-    cv2.imwrite(registered_depth_path, uint_depth_registered)
 
     return float_depth_registered, uint_depth_registered
