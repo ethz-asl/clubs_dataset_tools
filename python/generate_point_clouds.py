@@ -10,9 +10,10 @@ from clubs_dataset_tools.filesystem_tools import (
     read_images, find_images_in_folder, find_all_folders,
     find_rgb_d_image_folders, compare_image_names, create_point_cloud_folder,
     create_stereo_point_cloud_folder)
-from clubs_dataset_tools.common import (CalibrationParams)
+from clubs_dataset_tools.common import (CalibrationParams,
+                                        convert_depth_uint_to_float)
 from clubs_dataset_tools.point_cloud_generation import (
-    convert_depth_uint_to_float, save_colored_point_cloud_to_ply)
+    save_colored_point_cloud_to_ply)
 
 
 def generate_point_cloud(scene_folder,
