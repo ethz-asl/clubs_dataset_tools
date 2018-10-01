@@ -443,3 +443,76 @@ def save_to_csv_file(file_path, input):
     with open(file_path, 'wb') as csvfile:
         file_writer = csv.writer(csvfile, delimiter=',', quotechar='|')
         file_writer.writerows(input)
+
+
+def create_label_folders(input_folder):
+    """
+    Function that creates the folder for rgb and depth image labels if it
+    does not exist.
+
+    Input:
+        input_folder[string] - Path to specific object/box folder
+
+    Output:
+        realsense_d415_rgb_folder[string] - Path to the created d415 rgb label
+        folder
+        realsense_d415_depth_folder[string] - Path to the created d415 depth
+        label folder
+        realsense_d435_rgb_folder[string] - Path to the created d435 rgb label
+        folder
+        realsense_d435_depth_folder[string] - Path to the created d435 depth
+        label folder
+        primesense_rgb_folder[string] - Path to the created ps rgb label
+        folder
+        primesense_depth_folder[string] - Path to the created ps depth
+        label folder
+        chameleon_rgb_folder[string] - Path to the created cham3 rgb label
+        folder
+    """
+
+    chameleon_rgb_folder = (input_folder + 'chameleon3/labels/rgb_images')
+    primesense_rgb_folder = (input_folder + 'primesense/labels/rgb_images')
+    primesense_depth_folder = (input_folder + 'primesense/labels/depth_images')
+    realsense_d415_rgb_folder = (
+        input_folder + 'realsense_d415/labels/rgb_images')
+    realsense_d415_depth_folder = (
+        input_folder + 'realsense_d415/labels/depth_images')
+    realsense_d435_rgb_folder = (
+        input_folder + 'realsense_d435/labels/rgb_images')
+    realsense_d435_depth_folder = (
+        input_folder + 'realsense_d435/labels/depth_images')
+
+    if not os.path.exists(chameleon_rgb_folder):
+        os.makedirs(chameleon_rgb_folder)
+    if not os.path.exists(primesense_rgb_folder):
+        os.makedirs(primesense_rgb_folder)
+    if not os.path.exists(primesense_depth_folder):
+        os.makedirs(primesense_depth_folder)
+    if not os.path.exists(realsense_d415_rgb_folder):
+        os.makedirs(realsense_d415_rgb_folder)
+    if not os.path.exists(realsense_d415_depth_folder):
+        os.makedirs(realsense_d415_depth_folder)
+    if not os.path.exists(realsense_d435_rgb_folder):
+        os.makedirs(realsense_d435_rgb_folder)
+    if not os.path.exists(realsense_d435_depth_folder):
+        os.makedirs(realsense_d435_depth_folder)
+
+    log.debug("Created a new chameleon3 rgb label folder: \n" +
+              chameleon_rgb_folder)
+    log.debug("Created a new primesense rgb label folder: \n" +
+              primesense_rgb_folder)
+    log.debug("Created a new primesense depth label folder: \n" +
+              primesense_depth_folder)
+    log.debug("Created a new realsense d415 rgb label folder: \n" +
+              realsense_d415_rgb_folder)
+    log.debug("Created a new realsense d415 depth label folder: \n" +
+              realsense_d415_depth_folder)
+    log.debug("Created a new realsense d435 rgb label folder: \n" +
+              realsense_d435_rgb_folder)
+    log.debug("Created a new realsense d435 depth label folder: \n" +
+              realsense_d435_depth_folder)
+
+    return (realsense_d415_rgb_folder, realsense_d415_depth_folder,
+            realsense_d435_rgb_folder, realsense_d435_depth_folder,
+            primesense_rgb_folder, primesense_depth_folder,
+            chameleon_rgb_folder)

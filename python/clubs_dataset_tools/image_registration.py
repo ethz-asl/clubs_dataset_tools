@@ -2,8 +2,7 @@ import cv2
 import logging as log
 import numpy as np
 
-from clubs_dataset_tools.point_cloud_generation import (
-    convert_depth_float_to_uint)
+from clubs_dataset_tools.common import (convert_depth_float_to_uint)
 
 
 def register_depth_image(float_depth_image,
@@ -61,7 +60,56 @@ def register_depth_image(float_depth_image,
     uint_depth_registered = convert_depth_float_to_uint(float_depth_registered,
                                                         depth_scale_mm)
     kernel = np.ones((3, 3), np.uint16)
+    float_depth_registered = cv2.morphologyEx(float_depth_registered,
+                                              cv2.MORPH_CLOSE, kernel)
     uint_depth_registered = cv2.morphologyEx(uint_depth_registered,
                                              cv2.MORPH_CLOSE, kernel)
 
     return float_depth_registered, uint_depth_registered
+
+
+def project_points_to_camera(points_3d, extrinsics, intrinsics, distortion,
+                             image_size):
+    """
+    Function that projects points to the cameras specified by the extrinsic and
+    intrinsic parameteres, distortion coefficients, and image size.
+    Additionally, it provides a bounding box for the projected points.
+
+    Input:
+        points_3d[np.array] - Points in 3D
+        extrinsics[np.array] - Intrinsic parameters of the camera
+        intrinsics[np.array] - Extrinsic parameters of the camera
+        distortion[np.array] - Distortion coefficients of the camera
+        image_size[tuple(int)] - Image size of the camera (rows, columns)
+
+    Output:
+        projected_points[np.array] - Points in the new camera image, capped at
+        the image_size
+        bounding_box[np.array] - Bounding box of the points in the new camera
+        view
+
+    """
+
+    log.debug("Projecting 3D points to the specified camera frame.")
+
+    rotation = extrinsics[:3, :3]
+    translation = extrinsics[:3, 3]
+
+    projected_points_raw = cv2.projectPoints(points_3d, rotation, translation,
+                                             intrinsics, distortion)
+
+    projected_points = np.array(projected_points_raw[0]).reshape(-1, 2)
+
+    projected_points[projected_points[:, 0] < 0, 0] = 0
+    projected_points[projected_points[:, 0] > image_size[0], 0] = image_size[0]
+    projected_points[projected_points[:, 1] < 0, 1] = 0
+    projected_points[projected_points[:, 1] > image_size[1], 1] = image_size[1]
+
+    bounding_box = np.array([
+        np.min(projected_points[:, 0]),
+        np.min(projected_points[:, 1]),
+        np.max(projected_points[:, 0]) - np.min(projected_points[:, 0]),
+        np.max(projected_points[:, 1]) - np.min(projected_points[:, 1])
+    ])
+
+    return projected_points, bounding_box
