@@ -6,6 +6,7 @@ import libtiff
 import logging as log
 import glob
 import csv
+import stat
 
 
 def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):
@@ -470,6 +471,28 @@ def create_label_folders(input_folder):
         folder
     """
 
+    chameleon_labels_folder = (input_folder + 'chameleon3/labels')
+    primesense_labels_folder = (input_folder + 'primesense/labels')
+    realsense_d415_labels_folder = (input_folder + 'realsense_d415/labels')
+    realsense_d435_labels_folder = (input_folder + 'realsense_d435/labels')
+
+    if not os.path.exists(chameleon_labels_folder):
+        os.makedirs(chameleon_labels_folder)
+        os.chmod(chameleon_labels_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(chameleon_labels_folder, -1, 1009)
+    if not os.path.exists(primesense_labels_folder):
+        os.makedirs(primesense_labels_folder)
+        os.chmod(primesense_labels_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(primesense_labels_folder, -1, 1009)
+    if not os.path.exists(realsense_d415_labels_folder):
+        os.makedirs(realsense_d415_labels_folder)
+        os.chmod(realsense_d415_labels_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d415_labels_folder, -1, 1009)
+    if not os.path.exists(realsense_d435_labels_folder):
+        os.makedirs(realsense_d435_labels_folder)
+        os.chmod(realsense_d435_labels_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d435_labels_folder, -1, 1009)
+
     chameleon_rgb_folder = (input_folder + 'chameleon3/labels/rgb_images')
     primesense_rgb_folder = (input_folder + 'primesense/labels/rgb_images')
     primesense_depth_folder = (input_folder + 'primesense/labels/depth_images')
@@ -484,18 +507,32 @@ def create_label_folders(input_folder):
 
     if not os.path.exists(chameleon_rgb_folder):
         os.makedirs(chameleon_rgb_folder)
+        os.chmod(chameleon_rgb_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(chameleon_rgb_folder, -1, 1009)
     if not os.path.exists(primesense_rgb_folder):
         os.makedirs(primesense_rgb_folder)
+        os.chmod(primesense_rgb_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(primesense_rgb_folder, -1, 1009)
     if not os.path.exists(primesense_depth_folder):
         os.makedirs(primesense_depth_folder)
+        os.chmod(primesense_depth_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(primesense_depth_folder, -1, 1009)
     if not os.path.exists(realsense_d415_rgb_folder):
         os.makedirs(realsense_d415_rgb_folder)
+        os.chmod(realsense_d415_rgb_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d415_rgb_folder, -1, 1009)
     if not os.path.exists(realsense_d415_depth_folder):
         os.makedirs(realsense_d415_depth_folder)
+        os.chmod(realsense_d415_depth_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d415_depth_folder, -1, 1009)
     if not os.path.exists(realsense_d435_rgb_folder):
         os.makedirs(realsense_d435_rgb_folder)
+        os.chmod(realsense_d435_rgb_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d435_rgb_folder, -1, 1009)
     if not os.path.exists(realsense_d435_depth_folder):
         os.makedirs(realsense_d435_depth_folder)
+        os.chmod(realsense_d435_depth_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d435_depth_folder, -1, 1009)
 
     log.debug("Created a new chameleon3 rgb label folder: \n" +
               chameleon_rgb_folder)
