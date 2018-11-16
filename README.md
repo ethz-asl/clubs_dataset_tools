@@ -1,12 +1,12 @@
 # CLUBS Dataset Tools
 Welcome to the official CLUttered Box Scenes (CLUBS) dataset tools webpage.
-This repository contains tools for downloading and manipulation of the dataset.
-More specifically these include tools for:
-- Downloading different parts of the dataset
-- Computing depth images from an IR stereo pair
-- Generating a point clouds
-- Registering a depth image to an RGB image
-- Displaying label images in color
+This repository contains tools for downloading and manipulating the dataset.
+More specifically, these tools include:
+- Download script for different parts of the dataset
+- Script for computing depth images from an IR stereo pair
+- Script for generating point clouds
+- Script for registering depth images to corresponding RGB images
+- Script for displaying label images in color
 - Camera calibration script
 
 # Installation Instructions:
