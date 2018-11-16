@@ -209,8 +209,8 @@ if __name__ == '__main__':
         calib_params.read_from_yaml(args.ps_calib_file)
         calib_params.depth_intrinsics[0, 2] += ps_ir_x_offset_pixels
         calib_params.depth_intrinsics[1, 2] += ps_ir_y_offset_pixels
-        # if ps_folder != []:
-        #     generate_point_cloud(scene, ps_folder, calib_params)
+        if ps_folder != []:
+            generate_point_cloud(scene, ps_folder, calib_params)
 
         calib_params.read_from_yaml(args.d415_calib_file)
         calib_params.depth_intrinsics[0, 2] += d415_depth_x_offset_pixels
