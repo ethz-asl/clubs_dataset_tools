@@ -1,34 +1,38 @@
 #!/usr/bin/env python
 
 import argparse
-import sys
-import os
 import cv2
-import numpy as np
 import logging as log
+import numpy as np
+from scipy import signal
 
-from tqdm import tqdm, trange
+from tqdm import tqdm
 
-from clubs_dataset_tools.stereo_matching import (
-    rectify_images, stereo_match, StereoMatchingParams, CalibrationParams)
+from clubs_dataset_tools.stereo_matching import (rectify_images, stereo_match,
+                                                 StereoMatchingParams)
 from clubs_dataset_tools.filesystem_tools import (
-    read_images, find_images_in_folder, find_all_folders,
-    find_ir_image_folders, compare_image_names, create_stereo_depth_folder)
+    read_images, find_images_in_folder, find_all_folders, find_ir_image_folders,
+    compare_image_names, create_stereo_depth_folder,
+    create_rectified_images_folder)
+from clubs_dataset_tools.common import (CalibrationParams)
 
 
-def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
-                         calib_params):
+def compute_stereo_depth(scene_folder,
+                         sensor_folder,
+                         stereo_params,
+                         calib_params,
+                         save_rectified=False):
     """
     Function that rectifies images and applies SGBM algorithm to compute depth.
 
     Input:
-        scene_folder - Path to the scene folder
-        sensor_folder - List containing folder names for left and right ir
-        image, as well as the sensor root folder
-        stereo_params - Parameters for stereo matching (StereoMatchingParams
-        class)
-        calib_params - Calibration parameters from the camera
-        (CalibrationParams class)
+        scene_folder[string] - Path to the scene folder
+        sensor_folder[list(string)] - List containing folder names for left
+        and right ir image, as well as the sensor root folder
+        stereo_params[StereoMatchingParams] - Parameters for stereo matching
+        calib_params[CalibrationParams] - Calibration parameters from the
+        camera
+        save_rectified[bool] - If set to true, rectified images are saved
     """
 
     images_left = find_images_in_folder(scene_folder + sensor_folder[0])
@@ -52,73 +56,112 @@ def compute_stereo_depth(scene_folder, sensor_folder, stereo_params,
         stereo_depth_folder = create_stereo_depth_folder(scene_folder +
                                                          sensor_folder[2])
 
+        if save_rectified:
+            rectified_images_folder = create_rectified_images_folder(
+                scene_folder + sensor_folder[2])
+
         stereo_bar = tqdm(total=len(ir_left), desc="Stereo Matching Progress")
         for i in range(len(ir_left)):
             log.debug("Rectifying " + str(i) + ". image pair")
-            rectified_l, rectified_r, Q = rectify_images(
-                ir_left[i], calib_params.camera_matrix_l,
-                calib_params.dist_coeffs_l, ir_right[i],
-                calib_params.camera_matrix_r, calib_params.dist_coeffs_r,
-                calib_params.extrinsics_r, calib_params.extrinsics_t)
+            (rectified_l, rectified_r, disparity_to_depth_map,
+             rotation_matrix_left, new_calibration_left) = rectify_images(
+                 ir_left[i], calib_params.ir1_intrinsics,
+                 calib_params.ir1_distortion_coeffs, ir_right[i],
+                 calib_params.ir2_intrinsics,
+                 calib_params.ir2_distortion_coeffs, calib_params.extrinsics_r,
+                 calib_params.extrinsics_t)
+
+            if save_rectified:
+                cv2.imwrite(
+                    rectified_images_folder + '/' + timestamps[i] +
+                    '_rect_l.png', rectified_l)
+                cv2.imwrite(
+                    rectified_images_folder + '/' + timestamps[i] +
+                    '_rect_r.png', rectified_r)
+
             log.debug("Stereo matching " + str(i) + '. image pair')
+            depth_scale = 1000 / calib_params.depth_scale_mm
             depth_uint, depth_float, disparity_float = stereo_match(
                 rectified_l,
                 rectified_r,
                 calib_params.extrinsics_t[0],
-                calib_params.camera_matrix_l[0, 0],
+                new_calibration_left[0, 0],
                 stereo_params,
-                scale=10000)
+                sensor_folder[2][1:],
+                depth_scale)
+
+            zero_distortion = np.array([0, 0, 0, 0, 0])
+            map_l1, map_l2 = cv2.initUndistortRectifyMap(
+                new_calibration_left[:3, :3], zero_distortion,
+                np.linalg.inv(rotation_matrix_left),
+                new_calibration_left[:3, :3], depth_float.shape[::-1],
+                cv2.CV_16SC2)
+            depth_float = cv2.remap(depth_float, map_l1, map_l2,
+                                    cv2.INTER_LINEAR)
+
+            if stereo_params.use_median_filter:
+
+                depth_float = signal.medfilt2d(depth_float,
+                                               stereo_params.median_filter_size)
+                depth_uint = depth_float * depth_scale
+                depth_uint = depth_uint.astype(np.uint16)
+
             cv2.imwrite(
-                stereo_depth_folder + '/' + timestamps[i] +
-                '_depth_images.png', depth_uint)
+                stereo_depth_folder + '/' + timestamps[i] + '_stereo_depth.png',
+                depth_uint)
             stereo_bar.update()
         stereo_bar.close()
     else:
-        log.error("\nImage names are not consistent for left and right image")
+        log.error("\nImage names are not consistent for left and right image.")
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
-        description=
-        ("Perform stereo matching for the infrared images and save it as a "
-         "depth image. There are three different ways this function can be "
-         "called. First one is by passing in the dataset root folder "
-         "(flag --dataset_folder) which will create a new folder for each "
-         "object/box scene and each sensor (d415 and d435), containing the "
-         "depth image obtained through stereo matching. Second way is to pass "
-         "object/box scene root folder (flag --scene_folder) which will do "
-         "the same for that specific scene. Last way is to directly pass in "
-         "the right and left image (flags --left_image and --right_image) "
-         "which will create a depth map in the current folder."))
+        description=(
+            "Perform stereo matching for the infrared images and save it as a "
+            "depth image. There are two different ways this function can be "
+            "called. First one is by passing in the dataset root folder "
+            "(flag --dataset_folder) which will create a new folder for each "
+            "object/box scene and each sensor (d415 and d435), containing the "
+            "depth image obtained through stereo matching. A second way is to "
+            "pass object/box scene root folder (flag --scene_folder) which "
+            "will do the same for that specific scene."))
     parser.add_argument(
         '--dataset_folder', type=str, help="Path to the dataset root folder.")
     parser.add_argument(
-        '--use_only_boxes',
-        type=bool,
-        default=False,
-        help=("If this flag is set to True, depth from stereo will only be "
-              "computed for the box scenes."))
-    parser.add_argument(
         '--scene_folder', type=str, help="Path to the scene root folder.")
+    parser.add_argument(
+        '--d415_calib_file',
+        type=str,
+        default='config/realsense_d415_stereo_depth.yaml',
+        help=("Path to RealSense D415 calibration yaml file. Defaults to: "
+              "config/realsense_d415_stereo_depth.yaml"))
+    parser.add_argument(
+        '--d435_calib_file',
+        type=str,
+        default='config/realsense_d435_stereo_depth.yaml',
+        help=("Path to RealSense D435 calibration yaml file. Defaults to: "
+              "config/realsense_d435_stereo_depth.yaml"))
+    parser.add_argument(
+        '--stereo_params_file',
+        type=str,
+        default='config/default_stereo_params.yaml',
+        help=("Path to stereo parameters yaml file. Defaults to: "
+              "config/default_stereo_params.yaml"))
+    parser.add_argument(
+        '--use_only_boxes',
+        action='store_true',
+        help=("If this flag is set, depth from stereo will only be computed "
+              "for the box scenes."))
+    parser.add_argument(
+        '--save_rectified',
+        action='store_true',
+        help=("If this flag is set, rectified stereo images will be saved."))
     parser.add_argument(
         '--log',
         type=str,
         default='CRITICAL',
         help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
-    parser.add_argument(
-        '--d415_calib_file',
-        type=str,
-        default='config/realsense_hd_d415.yaml',
-        help=(
-            "Path to RealSense D415 calibration yaml file. By default located "
-            "in: config/realsense_hd_d415.yaml"))
-    parser.add_argument(
-        '--d435_calib_file',
-        type=str,
-        default='config/realsense_hd_d435.yaml',
-        help=(
-            "Path to RealSense D435 calibration yaml file. By default located "
-            "in: config/realsense_hd_d435.yaml"))
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)
@@ -128,9 +171,8 @@ if __name__ == '__main__':
     used_scenes = []
 
     stereo_params = StereoMatchingParams()
+    stereo_params.read_from_yaml(args.stereo_params_file)
     calib_params = CalibrationParams()
-    # TODO: add flags for loading from yaml.
-    # TODO: d435 has different calib params so change!
 
     if args.dataset_folder is not None:
         log.debug("Received dataset_folder.")
@@ -143,8 +185,7 @@ if __name__ == '__main__':
             log.debug("Processing both box and object scenes.")
             used_scenes = object_scenes + box_scenes
 
-        progress_bar = tqdm(
-            total=len(used_scenes) * 2, desc="Overall Progress")
+        progress_bar = tqdm(total=len(used_scenes) * 2, desc="Overall Progress")
         for i in range(len(used_scenes)):
             scene = used_scenes[i]
             log.debug("Processing " + str(scene))
@@ -153,12 +194,12 @@ if __name__ == '__main__':
             calib_params.read_from_yaml(args.d415_calib_file)
             if d415_folder != []:
                 compute_stereo_depth(scene, d415_folder, stereo_params,
-                                     calib_params)
+                                     calib_params, args.save_rectified)
             progress_bar.update()
             calib_params.read_from_yaml(args.d435_calib_file)
             if d435_folder != []:
                 compute_stereo_depth(scene, d435_folder, stereo_params,
-                                     calib_params)
+                                     calib_params, args.save_rectified)
             progress_bar.update()
         progress_bar.close()
     elif args.scene_folder is not None:
@@ -169,10 +210,10 @@ if __name__ == '__main__':
         calib_params.read_from_yaml(args.d415_calib_file)
         if d415_folder != []:
             compute_stereo_depth(args.scene_folder, d415_folder, stereo_params,
-                                 calib_params)
+                                 calib_params, args.save_rectified)
         calib_params.read_from_yaml(args.d435_calib_file)
         if d435_folder != []:
             compute_stereo_depth(args.scene_folder, d435_folder, stereo_params,
-                                 calib_params)
+                                 calib_params, args.save_rectified)
     else:
         parser.print_help()
