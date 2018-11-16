@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Executable for generating depth images from stereo pair."""
 
 import argparse
 import cv2
@@ -22,19 +23,18 @@ def compute_stereo_depth(scene_folder,
                          stereo_params,
                          calib_params,
                          save_rectified=False):
-    """
-    Function that rectifies images and applies SGBM algorithm to compute depth.
+    """Rectifies images and applies SGBM algorithm to compute depth.
 
-    Input:
-        scene_folder[string] - Path to the scene folder
-        sensor_folder[list(string)] - List containing folder names for left
-        and right ir image, as well as the sensor root folder
-        stereo_params[StereoMatchingParams] - Parameters for stereo matching
-        calib_params[CalibrationParams] - Calibration parameters from the
-        camera
-        save_rectified[bool] - If set to true, rectified images are saved
-    """
+    Args:
+        scene_folder (str): Path to the scene folder.
+        sensor_folder (list(str)): List containing folder names for left
+            and right IR image, as well as the sensor root folder.
+        stereo_params (StereoMatchingParams): Parameters for stereo matching.
+        calib_params (CalibrationParams): Calibration parameters from the
+            camera.
+        save_rectified (bool): If set to True, rectified images are saved.
 
+    """
     images_left = find_images_in_folder(scene_folder + sensor_folder[0])
     images_right = find_images_in_folder(scene_folder + sensor_folder[1])
 

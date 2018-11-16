@@ -1,4 +1,4 @@
-"""Tools for stereo rectification and stereo matching."""
+"""Contains tools for stereo rectification and stereo matching."""
 
 import yaml
 import numpy as np
@@ -7,15 +7,71 @@ import logging as log
 
 
 class StereoMatchingParams(object):
-    """
-    Stereo matching algorithm parameters.
+    """Stereo matching algorithm parameters.
+
+    Note:
+        For more details on the attributes please consult OpenCV documentation.
+
+    Attributes:
+        d415_min_disparity (int): Minimum possible disparity value for d415
+            camera.
+        d415_num_disparities (int): Maximum disparity minus minimum disparity
+            for d415 camera.
+        d415_block_size (int): Matched block size for d415 camera.
+        d415_p1 (int): The first parameter controlling the disparity
+            smoothness for d415 camera.
+        d415_p2 (int): The first parameter controlling the disparity
+            smoothness for d415 camera.
+        d435_min_disparity (int): Minimum possible disparity value for d435
+            camera.
+        d435_num_disparities (int): Maximum disparity minus minimum disparity
+            for d435 camera.
+        d435_block_size (int): Matched block size for d435 camera.
+        d435_p1 (int): The first parameter controlling the disparity
+            smoothness for d435 camera.
+        d435_p2 (int): The first parameter controlling the disparity
+            smoothness for d435 camera.
+        disp_12_max_diff (int): Maximum allowed difference (in integer pixel
+            units) in the left-right disparity check.
+        pre_filter_cap (int): Truncation value for the prefiltered image
+            pixels.
+        uniqueness_ratio (int): Margin in percentage by which the best
+            (minimum) computed cost function value should "win" the second best
+            value to consider the found match correct.
+        speckle_window_size (int): Maximum size of smooth disparity regions to
+            consider their noise speckles and invalidate.
+        speckle_range (int): Maximum disparity variation within each connected
+            component.
+        mode (int): Stereo algorithm to use. Check OpenCV documentation for
+            available options.
+        apply_bilateral_filter (bool): If set to True, bilateral filter will
+            be applied to the generated depth image.
+        bilateral_filter_size (int): Diameter of each pixel neighborhood that
+            is used during filtering.
+        bilateral_filter_sigma (float): Filter sigma in the color and
+            coordinate space.
+        apply_wls_filter (bool): If set to True, wls filter will be applied to
+        the generated depth image.
+        wls_filter_sigma_color (float): Parameter defining how sensitive the
+            filtering process is to source image edges.
+        wls_filter_lambda (float): Parameter defining the amount of
+            regularization during filtering.
+        wls_filter_radius (int): Defines the size of low-confidence regions
+            around depth discontinuities.
+        wls_filter_sigma_lrc_thresh (int): Threshold of disparity difference
+            used in left-right-consistency check during confidence map
+            computation.
+        use_median_filter (bool): If set to True, median filter will be applied
+            to the generated depth image.
+        median_filter_size (int):
+
     """
 
     def __init__(self):
-        """
-        Constructor for StereoMatchingParams.
-        """
+        """Construct the StereoMatchingParams class.
 
+        Constructor initializes all the attributes with the default values.
+        """
         log.debug("Initialized StereoMatchingParams with default values.")
 
         self.d415_min_disparity = 15
@@ -46,14 +102,12 @@ class StereoMatchingParams(object):
         self.median_filter_size = 11
 
     def read_from_yaml(self, yaml_file):
-        """
-        Function that reads the stereo parameters from the yaml file.
+        """Read the stereo parameters from the yaml file.
 
-        Input:
-            yaml_file[string] - Path to the yaml file containing the stereo
-            parameters.
+        Args:
+            yaml_file (str): Path to the yaml file containing the stereo
+                parameters.
         """
-
         log.debug("Initialized StereoMatchingParams from yaml file: " +
                   yaml_file)
 
@@ -91,33 +145,33 @@ class StereoMatchingParams(object):
 
 def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
                    camera_matrix_r, dist_coeffs_r, extrinsics_r, extrinsics_t):
+    """Rectifie and undisotort left and right stereo images.
+
+    Function takes in left and right image, together with their intrinsic and
+    extrinsic parameters and returns rectified and undistorted images and Q
+    matrix that maps disparity image to 3D.
+
+    Args:
+        image_l (np.array): Left image.
+        camera_matrix_l (np.array): 3x3 calibration matrix of the left image.
+        dist_coeffs_l (np.array): Distortion coefficients of the left image.
+        image_r (np.array): Right image.
+        camera_matrix_r (np.array): 3x3 calibration matrix of the right image.
+        dist_coeffs_r (np.array): Distortion coefficients of the right image.
+        extrinsics_r (np.array): Extrinsics 3x3 rotation matrix.
+        extrinsics_t (np.array): Extrinsics translation vector.
+
+    Returns:
+        rectified_l (np.array): Rectified and undistorted left image.
+        rectified_r (np.array): Rectified and undistorted right image.
+        disparity_to_depth_map (np.array): 4x4 perspective transformation
+            matrix: [X Y Z W]^t = Q * [u v disp(u,v) 1]^t.
+        rotation_matrix_left (np.array): 3x3 rotation matrix of the rectified
+            left image.
+        new_calibration_left (np.array): 3x4 new calibration matrix for left
+            image.
+
     """
-    Function that takes in left and right image, together with their
-    intrinsic and extrinsic parameters and returns rectified and undistorted
-    images and Q matrix that maps disparity image to 3D.
-
-    Input:
-        image_l[np.array] - Left image
-        camera_matrix_l[np.array] - 3x3 calibration matrix of the left image
-        dist_coeffs_l[np.array] - Distortion coefficients of the left image
-        image_r[np.array] - Right image
-        camera_matrix_r[np.array] - 3x3 calibration matrix of the right image
-        dist_coeffs_r[np.array] - Distortion coefficients of the right image
-        extrinsics_r[np.array] - Extrinsics 3x3 rotation matrix
-        extrinsics_t[np.array] - Extrinsics translation vector
-
-    Output:
-        rectified_l[np.array] - Rectified and undistorted left image
-        rectified_r[np.array] - Rectified and undistorted right image
-        disparity_to_depth_map[np.array] - 4x4 perspective transformation
-        matrix:
-            [X Y Z W]^t = Q * [u v disp(u,v) 1]^t
-        rotation_matrix_left[np.array] - 3x3 rotation matrix of the rectified
-        left image
-        new_calibration_left[np.array] - 3x4 new calibration matrix for left
-        image
-    """
-
     (rotation_matrix_left, rotation_matrix_right, new_calibration_left,
      new_calibration_right, disparity_to_depth_map, valid_ROI_left,
      valid_ROI_right) = cv2.stereoRectify(
@@ -161,31 +215,30 @@ def stereo_match(undistorted_rectified_l,
                  stereo_params,
                  sensor_name,
                  scale=1000.0):
+    """Perform stereo matching using semi global block matcher (SGBM).
+
+    Args:
+        undistorted_rectified_l (np.array): Undistorted and rectified left
+            image.
+        undistorted_rectified_r (np.array): Undistorted and rectified right
+            image.
+        baseline (float): Baseline between the left and right image in meters.
+        focal_length (float): Focal length of the left and right camera
+            (cameras with different x and y focal length are not supported).
+        stereo_params (StereoMatchingParams): StereoMatchingParams class
+            containing parameters for the SGBM algorithm.
+        sensor_name (str): Name of the sensor.
+        scale (float): Scaling used to convert to uint depth image (1000 for
+            converting m to mm).
+
+    Returns:
+        depth_uint (np.array): Depth image represented as a 16-bit uint image.
+        depth_float (np.array): Depth image represented as a 32-bit float
+            image.
+        disparity_float (np.array): Disparity image represented as a 32-bit
+            float image.
+
     """
-    Function that performs stereo matching using semi global block
-    matcher (SGBM), to obtain disparity and depth map.
-
-    Input:
-        undistorted_rectified_l[np.array] - Undistorted and rectified left
-        image
-        undistorted_rectified_r[np.array] - Undistorted and rectified right
-        image
-        baseline[float] - Baseline between the left and right image in m
-        focal_length[float] - Focal length of the left and right camera
-        (cameras with different x and y focal length are not supported)
-        stereo_params[StereoMatchingParams] - StereoMatchingParams class
-        containing parameters for the SGBM algorithm
-        sensor_name[string] - Name of the sensor
-        scale[float] - Scaling used to convert to uint depth image (1000 for
-        converting m to mm)
-
-    Output:
-        depth_uint[np.array] - Depth image represented as a 16-bit uint image
-        depth_float[np.array] - Depth image represented as a 32-bit float image
-        disparity_float[np.array] - Disparity image represented as a 32-bit
-        float image
-    """
-
     if sensor_name == "realsense_d415":
         stereo_matcher = cv2.StereoSGBM_create(
             stereo_params.d415_min_disparity,

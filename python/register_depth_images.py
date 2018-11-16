@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Executable for registering corresponding depth to RGB images."""
 
 import argparse
 import cv2
@@ -19,20 +20,19 @@ def generate_registered_depth(scene_folder,
                               sensor_folder,
                               calib_params,
                               use_stereo_depth=False):
-    """
-    Function that generates point cloud from RGB and Depth images.
+    """Generate registered depth images.
 
-    Input:
-        scene_folder[string] - Path to the scene folder
-        sensor_folder[list(string)] - List containing folder names for rgb and
-        depth image, as well as the sensor root folder
-        calib_params[CalibrationParams] - Calibration parameters from the
-        camera
-        use_stereo_depth[bool] - If set to True, stereo depth will be used and
-        therefore generated stereo depth intrinsics instead of device depth
-        intrinsics
-    """
+    Args:
+        scene_folder (str): Path to the scene folder.
+        sensor_folder (list(str)): List containing folder names for RGB and
+            depth image, as well as the sensor root folder.
+        calib_params (CalibrationParams): Calibration parameters from the
+            camera.
+        use_stereo_depth (bool): If set to True, stereo depth will be used and
+            therefore generated stereo depth intrinsics instead of device depth
+            intrinsics.
 
+    """
     images_rgb = find_images_in_folder(scene_folder + sensor_folder[0])
     images_depth = find_images_in_folder(scene_folder + sensor_folder[1])
 
