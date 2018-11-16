@@ -156,11 +156,11 @@ def convert_depth_uint_to_float(uint_depth_image,
 
     Args:
         uint_depth_image (np.array): Depth image of type uint16.
-        z_scaling (float): Correction for z values to correspond to true metric
-            values.
-        depth_scale_mm (float): Conversion factor for depth (e.g. 1 means that
-            value of 1000 in uint16 depth image corresponds to 1.0 in float
-            depth image and to 1m in real world).
+        z_scaling (float, optional): Correction for z values to correspond to
+            true metric values. Defaults to 1.0.
+        depth_scale_mm (float, optional): Conversion factor for depth (e.g. 1
+            means that value of 1000 in uint16 depth image corresponds to 1.0
+            in float depth image and to 1m in real world). Defaults to 1.0.
 
     Returns:
         float_depth_image (np.array): Depth image of type float.
@@ -178,9 +178,9 @@ def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
 
     Args:
         float_depth_image (np.array): Depth image of type float.
-        depth_scale_mm (float): Conversion factor for depth (e.g. 1 means that
-            value of 1000 in uint16 depth image corresponds to 1.0 in float
-            depth image and to 1m in real world).
+        depth_scale_mm (float, optional): Conversion factor for depth (e.g. 1
+            means that value of 1000 in uint16 depth image corresponds to 1.0
+            in float depth image and to 1m in real world). Defualts to 1.0.
 
     Returns:
         uint_depth_image (np.array) - Depth image of type uint16.

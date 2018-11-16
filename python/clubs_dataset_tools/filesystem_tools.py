@@ -18,9 +18,10 @@ def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):
 
     Args:
         image_files (list(str)): List containing full image paths.
-        image_extension (str): Extension of the images to be used.
-        image_type (int): OpenCV image type, specifies the number of channels
-            and type of data image contains.
+        image_extension (str, optional): Extension of the images to be used.
+            Defaults to '.png'.
+        image_type (int, optional): OpenCV image type, specifies the number of
+            channels and type of data image contains. Defaults to cv2.CV_16UC1
 
     Returns:
         images (list(np.array)): List of numpy arrays containing the images.
@@ -55,7 +56,8 @@ def find_images_in_folder(image_folder, image_extension='.png'):
 
     Args:
         image_folder (str): Path to the image folder.
-        image_extension (str): Extension of the images to search for.
+        image_extension (str, optional): Extension of the images to search for.
+            Defaults to '.png'.
 
     Returns:
         images (list(str)): List containing image filenames.
@@ -139,8 +141,10 @@ def find_rgb_d_image_folders(input_folder,
 
     Args:
         input_folder (str): Path to specific object/box folder.
-        use_stereo_depth (bool): If True, depth from stereo will be used.
-        use_registered_depth (bool): If True, registered depth will be used.
+        use_stereo_depth (bool, optional): If True, depth from stereo will be
+            used. Defaults to False.
+        use_registered_depth (bool, optional): If True, registered depth will
+            be used. Defaults to False.
 
     Returns:
         ps_image_folders (list(str)): Primesense root, RGB and depth image

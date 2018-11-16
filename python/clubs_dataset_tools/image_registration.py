@@ -29,9 +29,9 @@ def register_depth_image(float_depth_image,
         extrinsics (np.array): Extrinsic parameters between the RGB and the
             depth camera.
         rgb_shape (tuple(int)): Image size of the RGB image (rows, columns).
-        depth_scale_mm (float): Conversion factor for the depth (e.g. 1 means
-            that value of 1000 in uint16 depth image corresponds to 1.0 in
-            float depth image and to 1m in real world).
+        depth_scale_mm (float, optional): Conversion factor for the depth (e.g.
+            1 means that value of 1000 in uint16 depth image corresponds to 1.0
+            in float depth image and to 1m in real world). Defaults to 1.0.
 
     Returns:
         float_depth_registered (np.array): Depth image registered to rgb, float

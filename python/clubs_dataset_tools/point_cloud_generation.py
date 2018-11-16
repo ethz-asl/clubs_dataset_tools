@@ -54,9 +54,9 @@ def save_colored_point_cloud_to_ply(rgb_image,
         rgb_shape (tuple(int)): Image size of the RGB image (rows, columns).
         cloud_path (str): Path where to store the point cloud, including
             file name and extension.
-        use_registered_depth (bool): If True, registered depth images will be
-            used and therefore the resulting point cloud will be organized in
-            the order of the RGB image.
+        use_registered_depth (bool, optional): If True, registered depth images
+            will be used and therefore the resulting point cloud will be
+            organized in the order of the RGB image. Defaults to False.
 
     """
     rgb_image = cv2.undistort(rgb_image, rgb_intrinsics, rgb_distortion)

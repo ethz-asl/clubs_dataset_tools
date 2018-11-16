@@ -228,8 +228,8 @@ def stereo_match(undistorted_rectified_l,
         stereo_params (StereoMatchingParams): StereoMatchingParams class
             containing parameters for the SGBM algorithm.
         sensor_name (str): Name of the sensor.
-        scale (float): Scaling used to convert to uint depth image (1000 for
-            converting m to mm).
+        scale (float, optional): Scaling used to convert to uint depth image
+            (1000 for converting m to mm). Defaults to 1000.0.
 
     Returns:
         depth_uint (np.array): Depth image represented as a 16-bit uint image.

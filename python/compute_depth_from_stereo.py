@@ -32,7 +32,8 @@ def compute_stereo_depth(scene_folder,
         stereo_params (StereoMatchingParams): Parameters for stereo matching.
         calib_params (CalibrationParams): Calibration parameters from the
             camera.
-        save_rectified (bool): If set to True, rectified images are saved.
+        save_rectified (bool, optional): If set to True, rectified images are
+            saved. Defaults to False.
 
     """
     images_left = find_images_in_folder(scene_folder + sensor_folder[0])
@@ -134,19 +135,19 @@ if __name__ == '__main__':
         '--d415_calib_file',
         type=str,
         default='config/realsense_d415_stereo_depth.yaml',
-        help=("Path to RealSense D415 calibration yaml file. Defaults to: "
+        help=("Path to RealSense D415 calibration yaml file. Defaults to "
               "config/realsense_d415_stereo_depth.yaml"))
     parser.add_argument(
         '--d435_calib_file',
         type=str,
         default='config/realsense_d435_stereo_depth.yaml',
-        help=("Path to RealSense D435 calibration yaml file. Defaults to: "
+        help=("Path to RealSense D435 calibration yaml file. Defaults to "
               "config/realsense_d435_stereo_depth.yaml"))
     parser.add_argument(
         '--stereo_params_file',
         type=str,
         default='config/default_stereo_params.yaml',
-        help=("Path to stereo parameters yaml file. Defaults to: "
+        help=("Path to stereo parameters yaml file. Defaults to "
               "config/default_stereo_params.yaml"))
     parser.add_argument(
         '--use_only_boxes',
