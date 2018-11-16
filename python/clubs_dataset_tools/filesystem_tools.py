@@ -14,9 +14,9 @@ def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):
     Function that reads all the images from a list of file paths.
 
     Input:
-        image_files[list(string)] - List containing image full paths
+        image_files[list(string)] - List containing full image paths
         image_extension[string] - Extension of the images to be used
-        image_type[int] - Opencv image type
+        image_type[int] - OpenCV image type, specifies the number of channels and type of data image contains
 
     Output:
         images[list(np.array)] - List of numpy arrays containing the images
@@ -146,16 +146,47 @@ def find_rgb_d_image_folders(input_folder,
     expected_number_of_folders = 3
 
     ps_image_folders = []
+    d415_image_folders = []
+    d435_image_folders = []
     ps_rgb = '/primesense/rgb_images'
-    if os.path.isdir(input_folder + ps_rgb):
-        ps_image_folders.append(ps_rgb)
+    d415_rgb = '/realsense_d415/rgb_images'
+    d435_rgb = '/realsense_d435/rgb_images'
+
     if use_registered_depth:
         ps_depth = '/primesense/registered_depth_images'
+        if use_stereo_depth:
+            d415_depth = '/realsense_d415/registered_stereo_depth_images'
+            d435_depth = '/realsense_d435/registered_stereo_depth_images'
+        else:
+            d415_depth = '/realsense_d415/registered_depth_images'
+            d435_depth = '/realsense_d435/registered_depth_images'
     else:
         ps_depth = '/primesense/depth_images'
+        if use_stereo_depth:
+            d415_depth = '/realsense_d415/stereo_depth_images'
+            d435_depth = '/realsense_d435/stereo_depth_images'
+        else:
+            d415_depth = '/realsense_d415/depth_images'
+            d435_depth = '/realsense_d435/depth_images'
+
+    if os.path.isdir(input_folder + ps_rgb):
+        ps_image_folders.append(ps_rgb)
+    if os.path.isdir(input_folder + d415_rgb):
+        d415_image_folders.append(d415_rgb)
+    if os.path.isdir(input_folder + d435_rgb):
+        d435_image_folders.append(d435_rgb)
+
     if os.path.isdir(input_folder + ps_depth):
         ps_image_folders.append(ps_depth)
+    if os.path.isdir(input_folder + d415_depth):
+        d415_image_folders.append(d415_depth)
+    if os.path.isdir(input_folder + d435_depth):
+        d435_image_folders.append(d435_depth)
+
     ps_image_folders.append('/primesense')
+    d415_image_folders.append('/realsense_d415')
+    d435_image_folders.append('/realsense_d435')
+
     if len(ps_image_folders) is not expected_number_of_folders:
         log.error("\nPS rgb and depth folders could not be found!\n" +
                   "Looking for:\n" + str(input_folder + ps_rgb) + "\n" +
@@ -163,23 +194,6 @@ def find_rgb_d_image_folders(input_folder,
         ps_image_folders = []
     log.debug("Found ps folders: \n" + str(ps_image_folders))
 
-    d415_image_folders = []
-    d415_rgb = '/realsense_d415/rgb_images'
-    if os.path.isdir(input_folder + d415_rgb):
-        d415_image_folders.append(d415_rgb)
-    if use_stereo_depth:
-        if use_registered_depth:
-            d415_depth = '/realsense_d415/registered_stereo_depth_images'
-        else:
-            d415_depth = '/realsense_d415/stereo_depth_images'
-    else:
-        if use_registered_depth:
-            d415_depth = '/realsense_d415/registered_depth_images'
-        else:
-            d415_depth = '/realsense_d415/depth_images'
-    if os.path.isdir(input_folder + d415_depth):
-        d415_image_folders.append(d415_depth)
-    d415_image_folders.append('/realsense_d415')
     if len(d415_image_folders) is not expected_number_of_folders:
         log.error("\nD415 rgb and depth folders could not be found!\n" +
                   "Looking for:\n" + str(input_folder + d415_rgb) + "\n" +
@@ -187,23 +201,6 @@ def find_rgb_d_image_folders(input_folder,
         d415_image_folders = []
     log.debug("Found d415 folders: \n" + str(d415_image_folders))
 
-    d435_image_folders = []
-    d435_rgb = '/realsense_d435/rgb_images'
-    if os.path.isdir(input_folder + d435_rgb):
-        d435_image_folders.append(d435_rgb)
-    if use_stereo_depth:
-        if use_registered_depth:
-            d435_depth = '/realsense_d435/registered_stereo_depth_images'
-        else:
-            d435_depth = '/realsense_d435/stereo_depth_images'
-    else:
-        if use_registered_depth:
-            d435_depth = '/realsense_d435/registered_depth_images'
-        else:
-            d435_depth = '/realsense_d435/depth_images'
-    if os.path.isdir(input_folder + d435_depth):
-        d435_image_folders.append(d435_depth)
-    d435_image_folders.append('/realsense_d435')
     if len(d435_image_folders) is not expected_number_of_folders:
         log.error("\nD435 rgb and depth folders could not be found!" +
                   "Looking for:\n" + str(input_folder + d435_rgb) + "\n" +
