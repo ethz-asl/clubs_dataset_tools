@@ -80,6 +80,7 @@ def compute_stereo_depth(scene_folder,
                     '_rect_r.png', rectified_r)
 
             log.debug("Stereo matching " + str(i) + '. image pair')
+            depth_scale = 1000 / calib_params.depth_scale_mm
             depth_uint, depth_float, disparity_float = stereo_match(
                 rectified_l,
                 rectified_r,
@@ -87,7 +88,7 @@ def compute_stereo_depth(scene_folder,
                 new_calibration_left[0, 0],
                 stereo_params,
                 sensor_folder[2][1:],
-                scale=10000.0)
+                depth_scale)
 
             zero_distortion = np.array([0, 0, 0, 0, 0])
             map_l1, map_l2 = cv2.initUndistortRectifyMap(
@@ -99,9 +100,10 @@ def compute_stereo_depth(scene_folder,
                                     cv2.INTER_LINEAR)
 
             if stereo_params.use_median_filter:
+
                 depth_float = signal.medfilt2d(depth_float,
                                                stereo_params.median_filter_size)
-                depth_uint = depth_float * 10000
+                depth_uint = depth_float * depth_scale
                 depth_uint = depth_uint.astype(np.uint16)
 
             cv2.imwrite(
@@ -121,7 +123,7 @@ if __name__ == '__main__':
             "called. First one is by passing in the dataset root folder "
             "(flag --dataset_folder) which will create a new folder for each "
             "object/box scene and each sensor (d415 and d435), containing the "
-            "depth image obtained through stereo matching. Second way is to "
+            "depth image obtained through stereo matching. A second way is to "
             "pass object/box scene root folder (flag --scene_folder) which "
             "will do the same for that specific scene."))
     parser.add_argument(
@@ -132,19 +134,19 @@ if __name__ == '__main__':
         '--d415_calib_file',
         type=str,
         default='config/realsense_d415_stereo_depth.yaml',
-        help=("Path to RealSense D415 calibration yaml file. By default: "
+        help=("Path to RealSense D415 calibration yaml file. Defaults to: "
               "config/realsense_d415_stereo_depth.yaml"))
     parser.add_argument(
         '--d435_calib_file',
         type=str,
         default='config/realsense_d435_stereo_depth.yaml',
-        help=("Path to RealSense D435 calibration yaml file. By default: "
+        help=("Path to RealSense D435 calibration yaml file. Defaults to: "
               "config/realsense_d435_stereo_depth.yaml"))
     parser.add_argument(
         '--stereo_params_file',
         type=str,
         default='config/default_stereo_params.yaml',
-        help=("Path to stereo parameters yaml file. By default: "
+        help=("Path to stereo parameters yaml file. Defaults to: "
               "config/default_stereo_params.yaml"))
     parser.add_argument(
         '--use_only_boxes',
