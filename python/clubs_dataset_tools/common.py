@@ -83,7 +83,8 @@ class CalibrationParams(object):
                 parameters.
 
         """
-        log.debug("Initialized CalibrationParams from yaml file: " + yaml_file)
+        log.debug("Initialized CalibrationParams from the yaml file: " +
+                  yaml_file)
 
         with open(yaml_file, 'r') as file_pointer:
             calibration_params = yaml.load(file_pointer)
@@ -144,6 +145,87 @@ class CalibrationParams(object):
         self.depth_height = calibration_params['depth_height']
         self.z_scaling = calibration_params['z_scaling']
         self.depth_scale_mm = calibration_params['depth_scale_mm']
+
+
+class SensorTransformations(object):
+    """Transformations to all the sensors.
+
+    Attributes:
+        d415_rgb (np.array): 4x4 homogeneous transformation to RealSense D415
+            RGB camera.
+        d415_depth (np.array): 4x4 homogeneous transformation to RealSense D415
+            depth camera.
+        d435_rgb (np.array): 4x4 homogeneous transformation to RealSense D435
+            RGB camera.
+        d435_depth (np.array): 4x4 homogeneous transformation to RealSense D415
+            depth camera.
+        ps_rgb (np.array): 4x4 homogeneous transformation to PrimeSense RGB
+            camera.
+        ps_depth (np.array): 4x4 homogeneous transformation to PrimeSense depth
+            camera.
+        cham_rgb (np.array): 4x4 homogeneous transformation to Chameleon3 RGB
+            camera.
+
+    """
+
+    def __init__(self):
+        """Construct the SensorTransformations class.
+
+        The constructor for the SensorTransformations class initializes all the
+        atributes of the class to an empty numpy array.
+        """
+        log.debug("Initialized an empty SensorTransformations class.")
+
+        self.d415_rgb = np.array([])
+        self.d415_depth = np.array([])
+        self.d435_rgb = np.array([])
+        self.d435_depth = np.array([])
+        self.ps_rgb = np.array([])
+        self.ps_depth = np.array([])
+        self.cham_rgb = np.array([])
+
+    def read_from_yaml(self, yaml_file):
+        """Read the sensor transformations from the yaml file.
+
+        Args:
+            yaml_file (str): Path to the yaml file containing the sensor
+                transformations.
+
+        """
+        log.debug("Initialized SensorTransformations from the yaml file: " +
+                  yaml_file)
+
+        with open(yaml_file, 'r') as file_pointer:
+            transformations = yaml.load(file_pointer)
+
+        raw_d415_rgb = transformations['d415_rgb']
+        self.d415_rgb = np.array(
+            np.reshape(raw_d415_rgb['data'],
+                       (raw_d415_rgb['rows'], raw_d415_rgb['cols'])))
+        raw_d415_depth = transformations['d415_depth']
+        self.d415_depth = np.array(
+            np.reshape(raw_d415_depth['data'],
+                       (raw_d415_depth['rows'], raw_d415_depth['cols'])))
+        raw_d435_rgb = transformations['d435_rgb']
+        self.d435_rgb = np.array(
+            np.reshape(raw_d435_rgb['data'],
+                       (raw_d435_rgb['rows'], raw_d435_rgb['cols'])))
+        raw_d435_depth = transformations['d435_depth']
+        self.d435_depth = np.array(
+            np.reshape(raw_d435_depth['data'],
+                       (raw_d435_depth['rows'], raw_d435_depth['cols'])))
+        raw_ps_rgb = transformations['ps_rgb']
+        self.ps_rgb = np.array(
+            np.reshape(raw_ps_rgb['data'],
+                       (raw_ps_rgb['rows'], raw_ps_rgb['cols'])))
+        raw_ps_depth = transformations['ps_depth']
+        self.ps_depth = np.array(
+            np.reshape(raw_ps_depth['data'],
+                       (raw_ps_depth['rows'], raw_ps_depth['cols'])))
+        raw_cham_rgb = transformations['cham_rgb']
+        self.cham_rgb = np.array(
+            np.reshape(raw_cham_rgb['data'],
+                       (raw_cham_rgb['rows'], raw_cham_rgb['cols'])))
 
 
 def convert_depth_uint_to_float(uint_depth_image,
