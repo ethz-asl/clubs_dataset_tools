@@ -3,16 +3,14 @@
 import argparse
 import cv2
 import logging as log
-
 from tqdm import tqdm
 
 from clubs_dataset_tools.filesystem_tools import (
     read_images, find_images_in_folder, find_all_folders,
     find_rgb_d_image_folders, compare_image_names,
     create_depth_registered_folder, create_stereo_depth_registered_folder)
-from clubs_dataset_tools.common import (CalibrationParams)
-from clubs_dataset_tools.point_cloud_generation import (
-    convert_depth_uint_to_float)
+from clubs_dataset_tools.common import (CalibrationParams,
+                                        convert_depth_uint_to_float)
 from clubs_dataset_tools.image_registration import (register_depth_image)
 
 

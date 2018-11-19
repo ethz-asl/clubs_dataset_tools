@@ -1,8 +1,8 @@
 """Tools for stereo rectification and stereo matching."""
 
 import yaml
-import numpy as np
 import cv2
+import numpy as np
 import logging as log
 
 
