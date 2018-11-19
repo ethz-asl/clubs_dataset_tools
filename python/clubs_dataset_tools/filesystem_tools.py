@@ -3,9 +3,10 @@
 import os
 import cv2
 import libtiff
-import logging as log
 import glob
 import csv
+import stat
+import logging as log
 
 
 def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):
@@ -420,7 +421,7 @@ def read_from_csv_file(file_path):
         file_reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
         for row in file_reader:
             split_row = row[0].split(',')
-            output.append(map(float, split_row))
+            output.append(map(str, split_row))
 
     return output
 
@@ -440,3 +441,112 @@ def save_to_csv_file(file_path, input):
     with open(file_path, 'wb') as csvfile:
         file_writer = csv.writer(csvfile, delimiter=',', quotechar='|')
         file_writer.writerows(input)
+
+
+def create_label_folders(input_folder):
+    """
+    Function that creates the folder for rgb and depth image labels if it
+    does not exist.
+
+    Input:
+        input_folder[string] - Path to specific object/box folder
+
+    Output:
+        realsense_d415_rgb_folder[string] - Path to the created d415 rgb label
+        folder
+        realsense_d415_depth_folder[string] - Path to the created d415 depth
+        label folder
+        realsense_d435_rgb_folder[string] - Path to the created d435 rgb label
+        folder
+        realsense_d435_depth_folder[string] - Path to the created d435 depth
+        label folder
+        primesense_rgb_folder[string] - Path to the created ps rgb label
+        folder
+        primesense_depth_folder[string] - Path to the created ps depth
+        label folder
+        chameleon_rgb_folder[string] - Path to the created cham3 rgb label
+        folder
+    """
+
+    chameleon_labels_folder = (input_folder + 'chameleon3/labels')
+    primesense_labels_folder = (input_folder + 'primesense/labels')
+    realsense_d415_labels_folder = (input_folder + 'realsense_d415/labels')
+    realsense_d435_labels_folder = (input_folder + 'realsense_d435/labels')
+
+    if not os.path.exists(chameleon_labels_folder):
+        os.makedirs(chameleon_labels_folder)
+        os.chmod(chameleon_labels_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(chameleon_labels_folder, -1, 1009)
+    if not os.path.exists(primesense_labels_folder):
+        os.makedirs(primesense_labels_folder)
+        os.chmod(primesense_labels_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(primesense_labels_folder, -1, 1009)
+    if not os.path.exists(realsense_d415_labels_folder):
+        os.makedirs(realsense_d415_labels_folder)
+        os.chmod(realsense_d415_labels_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d415_labels_folder, -1, 1009)
+    if not os.path.exists(realsense_d435_labels_folder):
+        os.makedirs(realsense_d435_labels_folder)
+        os.chmod(realsense_d435_labels_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d435_labels_folder, -1, 1009)
+
+    chameleon_rgb_folder = (input_folder + 'chameleon3/labels/rgb_images')
+    primesense_rgb_folder = (input_folder + 'primesense/labels/rgb_images')
+    primesense_depth_folder = (input_folder + 'primesense/labels/depth_images')
+    realsense_d415_rgb_folder = (
+        input_folder + 'realsense_d415/labels/rgb_images')
+    realsense_d415_depth_folder = (
+        input_folder + 'realsense_d415/labels/depth_images')
+    realsense_d435_rgb_folder = (
+        input_folder + 'realsense_d435/labels/rgb_images')
+    realsense_d435_depth_folder = (
+        input_folder + 'realsense_d435/labels/depth_images')
+
+    if not os.path.exists(chameleon_rgb_folder):
+        os.makedirs(chameleon_rgb_folder)
+        os.chmod(chameleon_rgb_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(chameleon_rgb_folder, -1, 1009)
+    if not os.path.exists(primesense_rgb_folder):
+        os.makedirs(primesense_rgb_folder)
+        os.chmod(primesense_rgb_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(primesense_rgb_folder, -1, 1009)
+    if not os.path.exists(primesense_depth_folder):
+        os.makedirs(primesense_depth_folder)
+        os.chmod(primesense_depth_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(primesense_depth_folder, -1, 1009)
+    if not os.path.exists(realsense_d415_rgb_folder):
+        os.makedirs(realsense_d415_rgb_folder)
+        os.chmod(realsense_d415_rgb_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d415_rgb_folder, -1, 1009)
+    if not os.path.exists(realsense_d415_depth_folder):
+        os.makedirs(realsense_d415_depth_folder)
+        os.chmod(realsense_d415_depth_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d415_depth_folder, -1, 1009)
+    if not os.path.exists(realsense_d435_rgb_folder):
+        os.makedirs(realsense_d435_rgb_folder)
+        os.chmod(realsense_d435_rgb_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d435_rgb_folder, -1, 1009)
+    if not os.path.exists(realsense_d435_depth_folder):
+        os.makedirs(realsense_d435_depth_folder)
+        os.chmod(realsense_d435_depth_folder, stat.S_IRWXG | stat.S_IRWXU)
+        os.chown(realsense_d435_depth_folder, -1, 1009)
+
+    log.debug("Created a new chameleon3 rgb label folder: \n" +
+              chameleon_rgb_folder)
+    log.debug("Created a new primesense rgb label folder: \n" +
+              primesense_rgb_folder)
+    log.debug("Created a new primesense depth label folder: \n" +
+              primesense_depth_folder)
+    log.debug("Created a new realsense d415 rgb label folder: \n" +
+              realsense_d415_rgb_folder)
+    log.debug("Created a new realsense d415 depth label folder: \n" +
+              realsense_d415_depth_folder)
+    log.debug("Created a new realsense d435 rgb label folder: \n" +
+              realsense_d435_rgb_folder)
+    log.debug("Created a new realsense d435 depth label folder: \n" +
+              realsense_d435_depth_folder)
+
+    return (realsense_d415_rgb_folder, realsense_d415_depth_folder,
+            realsense_d435_rgb_folder, realsense_d435_depth_folder,
+            primesense_rgb_folder, primesense_depth_folder,
+            chameleon_rgb_folder)
