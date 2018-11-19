@@ -73,7 +73,7 @@ class CalibrationParams(object):
         self.depth_width = 0.0
         self.depth_height = 0.0
         self.z_scaling = 0.0
-        self.depth_scale_mm = 0.0
+        self.depth_scale = 0.0
 
     def read_from_yaml(self, yaml_file):
         """Read the calibration parameters from the yaml file.
@@ -144,7 +144,7 @@ class CalibrationParams(object):
         self.depth_width = calibration_params['depth_width']
         self.depth_height = calibration_params['depth_height']
         self.z_scaling = calibration_params['z_scaling']
-        self.depth_scale_mm = calibration_params['depth_scale_mm']
+        self.depth_scale = calibration_params['depth_scale']
 
 
 class SensorTransformations(object):
@@ -230,7 +230,7 @@ class SensorTransformations(object):
 
 def convert_depth_uint_to_float(uint_depth_image,
                                 z_scaling=1.0,
-                                depth_scale_mm=1.0):
+                                depth_scale=1.0):
     """Convert uint16 depth image to float.
 
     During conversion, the depth scale and z_scaling are taken into
@@ -240,7 +240,7 @@ def convert_depth_uint_to_float(uint_depth_image,
         uint_depth_image (np.array): Depth image of type uint16.
         z_scaling (float, optional): Correction for z values to correspond to
             true metric values. Defaults to 1.0.
-        depth_scale_mm (float, optional): Conversion factor for depth (e.g. 1
+        depth_scale (float, optional): Conversion factor for depth (e.g. 1
             means that value of 1000 in uint16 depth image corresponds to 1.0
             in float depth image and to 1m in real world). Defaults to 1.0.
 
@@ -251,16 +251,15 @@ def convert_depth_uint_to_float(uint_depth_image,
     log.debug(("Converting uint depth to float and applying z_scaling and "
                "depth_scaling"))
 
-    return (
-        uint_depth_image / 1000.0 * depth_scale_mm * z_scaling).astype('float')
+    return (uint_depth_image / 1000.0 * depth_scale * z_scaling).astype('float')
 
 
-def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
+def convert_depth_float_to_uint(float_depth_image, depth_scale=1.0):
     """Convert float depth image to uint16, also considering the depth scale.
 
     Args:
         float_depth_image (np.array): Depth image of type float.
-        depth_scale_mm (float, optional): Conversion factor for depth (e.g. 1
+        depth_scale (float, optional): Conversion factor for depth (e.g. 1
             means that value of 1000 in uint16 depth image corresponds to 1.0
             in float depth image and to 1m in real world). Defualts to 1.0.
 
@@ -270,4 +269,4 @@ def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
     """
     log.debug("Converting float depth to uint16 and applying depth_scaling")
 
-    return (float_depth_image * 1000.0 / depth_scale_mm).astype('uint16')
+    return (float_depth_image * 1000.0 / depth_scale).astype('uint16')

@@ -5,8 +5,8 @@ creates a point cloud and saves it as a PLY file.
 """
 
 import cv2
-import logging as log
 import numpy as np
+import logging as log
 
 ply_header = '''ply
 format ascii 1.0

@@ -122,7 +122,7 @@ while iCam <= numberOfCameras
         imagePointsArray{iCam}(:,:,idxToRemove) = [];
         imagesUsedLocation{iCam}(idxToRemove) = [];
         iteration = iteration + 1;
-        
+
         if iteration > maxIterations
             disp('Reached maximum number of iterations for outlier rejection.')
             iCam = iCam + 1;
@@ -284,7 +284,7 @@ for currentSet = 1 : size(exportSet, 1)
                 calibrationParameters{iCams(iCam)}.PrincipalPoint, ...
                 [0, 0, 0], [0, 0], ...
                 extrinsics, 'depth');
-            
+
             saveToYamlFile (fileID, calibrationParameters{iCams(iCam)}.FocalLength, ...
                 calibrationParameters{iCams(iCam)}.PrincipalPoint, ...
                 calibrationParameters{iCams(iCam)}.RadialDistortion, ...
@@ -354,7 +354,7 @@ for currentSet = 1 : size(exportSet, 1)
                 extrinsics(1,4), extrinsics(2,4), extrinsics(3,4), ...
                 quaternion(2), quaternion(3), quaternion(4), quaternion(1));
             end
-           
+
             fprintf(fileID, '%s %d\n', 'rgb_width:', 1920);
             fprintf(fileID, '%s %d\n', 'rgb_height:', 1080);
             fprintf(fileID, '%s %d\n', 'depth_width:', 1280);
@@ -372,11 +372,11 @@ for currentSet = 1 : size(exportSet, 1)
         fprintf(fileID, '%s %f\n', 'z_scaling:', 1.0);
     end
     if strcmp(cameraSets{currentSet}, 'primesense')
-        fprintf(fileID, '%s %f\n', 'depth_scale_mm:', 1.0);
+        fprintf(fileID, '%s %f\n', 'depth_scale:', 1.0);
     elseif strcmp(cameraSets{currentSet}, 'chameleon')
-        fprintf(fileID, '%s %f\n', 'depth_scale_mm:', 0.0);
+        fprintf(fileID, '%s %f\n', 'depth_scale:', 0.0);
     else
-        fprintf(fileID, '%s %f\n', 'depth_scale_mm:', 0.1);
+        fprintf(fileID, '%s %f\n', 'depth_scale:', 0.1);
     end
     fclose(fileID);
 end
