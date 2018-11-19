@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Executable for generating depth images from stereo pair."""
+"""Executable for generating depth images from a stereo pair."""
 
 import argparse
 import cv2
@@ -22,7 +22,7 @@ def compute_stereo_depth(scene_folder,
                          stereo_params,
                          calib_params,
                          save_rectified=False):
-    """Rectifies images and applies SGBM algorithm to compute depth.
+    """Rectify images and apply SGBM algorithm to compute a depth image.
 
     Args:
         scene_folder (str): Path to the scene folder.
@@ -82,12 +82,8 @@ def compute_stereo_depth(scene_folder,
             log.debug("Stereo matching " + str(i) + '. image pair')
             depth_scale = 1000 / calib_params.depth_scale
             depth_uint, depth_float, disparity_float = stereo_match(
-                rectified_l,
-                rectified_r,
-                calib_params.extrinsics_t[0],
-                new_calibration_left[0, 0],
-                stereo_params,
-                sensor_folder[2][1:],
+                rectified_l, rectified_r, calib_params.extrinsics_t[0],
+                new_calibration_left[0, 0], stereo_params, sensor_folder[2][1:],
                 depth_scale)
 
             zero_distortion = np.array([0, 0, 0, 0, 0])

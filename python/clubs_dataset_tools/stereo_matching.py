@@ -102,13 +102,13 @@ class StereoMatchingParams(object):
         self.median_filter_size = 11
 
     def read_from_yaml(self, yaml_file):
-        """Read the stereo parameters from the yaml file.
+        """Read the stereo parameters from a yaml file.
 
         Args:
             yaml_file (str): Path to the yaml file containing the stereo
                 parameters.
         """
-        log.debug("Initialized StereoMatchingParams from yaml file: " +
+        log.debug("Initialized StereoMatchingParams from a yaml file: " +
                   yaml_file)
 
         with open(yaml_file, 'r') as file_pointer:

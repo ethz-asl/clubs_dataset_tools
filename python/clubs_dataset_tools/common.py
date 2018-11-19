@@ -1,9 +1,10 @@
 """Contains common classes and functions for camera and image handling.
 
-CalibrationParams class handles camera paramters and allows loading from yaml
-file. convert_depth_uint_to_float and convert_depth_float_to_uint are two
-convinience functions for converting depth images to and from float and uint16
-type.
+The CalibrationParams class handles camera paramters and allows loading params
+from a yaml file. convert_depth_uint_to_float and convert_depth_float_to_uint
+are two convinience functions for converting depth images to and from float and
+uint16 type. SensorTransformations class contains transformations from a
+specific camera to all the sensors in the scanning setup.
 """
 
 import yaml
@@ -51,7 +52,7 @@ class CalibrationParams(object):
         """Construct the CalibrationParams class.
 
         The constructor for the CalibrationParams class initializes all the
-        atributes of the class to either empty numpy array or zero.
+        atributes of the class to either empty numpy array or zero values.
         """
         log.debug("Initialized an empty CalibrationParams class.")
 
@@ -76,14 +77,14 @@ class CalibrationParams(object):
         self.depth_scale = 0.0
 
     def read_from_yaml(self, yaml_file):
-        """Read the calibration parameters from the yaml file.
+        """Read the calibration parameters from a yaml file.
 
         Args:
             yaml_file (str): Path to the yaml file containing the calibration
                 parameters.
 
         """
-        log.debug("Initialized CalibrationParams from the yaml file: " +
+        log.debug("Initialized CalibrationParams from a yaml file: " +
                   yaml_file)
 
         with open(yaml_file, 'r') as file_pointer:
@@ -185,14 +186,14 @@ class SensorTransformations(object):
         self.cham_rgb = np.array([])
 
     def read_from_yaml(self, yaml_file):
-        """Read the sensor transformations from the yaml file.
+        """Read the sensor transformations from a yaml file.
 
         Args:
             yaml_file (str): Path to the yaml file containing the sensor
                 transformations.
 
         """
-        log.debug("Initialized SensorTransformations from the yaml file: " +
+        log.debug("Initialized SensorTransformations from a yaml file: " +
                   yaml_file)
 
         with open(yaml_file, 'r') as file_pointer:
