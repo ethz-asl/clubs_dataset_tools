@@ -22,7 +22,7 @@ def compute_stereo_depth(scene_folder,
                          stereo_params,
                          calib_params,
                          save_rectified=False):
-    """Rectifies images and applies SGBM algorithm to compute depth.
+    """Rectify an image and apply SGBM algorithm to compute the depth.
 
     Args:
         scene_folder (str): Path to the scene folder.

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Executable for registering corresponding depth to RGB images."""
+"""Executable for registering depth to corresponding RGB image."""
 
 import argparse
 import cv2
@@ -19,7 +19,7 @@ def generate_registered_depth(scene_folder,
                               sensor_folder,
                               calib_params,
                               use_stereo_depth=False):
-    """Generate registered depth images.
+    """Generate a registered depth image.
 
     Args:
         scene_folder (str): Path to the scene folder.
