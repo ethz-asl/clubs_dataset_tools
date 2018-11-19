@@ -11,7 +11,7 @@ def register_depth_image(float_depth_image,
                          depth_intrinsics,
                          extrinsics,
                          rgb_shape,
-                         depth_scale_mm=1.0):
+                         depth_scale=1.0):
     """
     Function that registers a depth image to an rgb image. Registered depth
     image has the same size as the original rgb image. Rgb intrinsics are used
@@ -24,7 +24,7 @@ def register_depth_image(float_depth_image,
         extrinsics[np.array] - Extrinsic parameters between the rgb and the
         depth cameras
         rgb_shape[tuple(int)] - Image size of the rgb image (rows, columns)
-        depth_scale_mm[float] - Conversion factor for the depth (e.g. 1 means
+        depth_scale[float] - Conversion factor for the depth (e.g. 1 means
         that value of 1000 in uint16 depth image corresponds to 1.0 in float
         depth image and to 1m in real world)
 
@@ -59,7 +59,7 @@ def register_depth_image(float_depth_image,
                 float_depth_registered[v, u] = point[2]
 
     uint_depth_registered = convert_depth_float_to_uint(float_depth_registered,
-                                                        depth_scale_mm)
+                                                        depth_scale)
     kernel = np.ones((3, 3), np.uint16)
     uint_depth_registered = cv2.morphologyEx(uint_depth_registered,
                                              cv2.MORPH_CLOSE, kernel)

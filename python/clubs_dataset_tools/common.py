@@ -37,7 +37,7 @@ class CalibrationParams(object):
         self.depth_width = 0.0
         self.depth_height = 0.0
         self.z_scaling = 0.0
-        self.depth_scale_mm = 0.0
+        self.depth_scale = 0.0
 
     def read_from_yaml(self, yaml_file):
         """
@@ -108,4 +108,4 @@ class CalibrationParams(object):
         self.depth_width = calibration_params['depth_width']
         self.depth_height = calibration_params['depth_height']
         self.z_scaling = calibration_params['z_scaling']
-        self.depth_scale_mm = calibration_params['depth_scale_mm']
+        self.depth_scale = calibration_params['depth_scale']

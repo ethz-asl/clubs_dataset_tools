@@ -68,7 +68,7 @@ def generate_point_cloud(scene_folder,
         for i in range(len(rgb_images)):
             float_depth_image = convert_depth_uint_to_float(
                 depth_images[i], calib_params.z_scaling,
-                calib_params.depth_scale_mm)
+                calib_params.depth_scale)
 
             point_cloud_path = (
                 point_cloud_folder + '/' + timestamps[i] + '_point_cloud.ply')

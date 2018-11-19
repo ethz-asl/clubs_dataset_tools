@@ -27,7 +27,7 @@ DISTANCE_UPPER_LIMIT = 5.0
 
 def convert_depth_uint_to_float(uint_depth_image,
                                 z_scaling=1.0,
-                                depth_scale_mm=1.0):
+                                depth_scale=1.0):
     """
     Function that converts uint16 depth image to float, also considering the
     depth scale and z_scaling.
@@ -36,7 +36,7 @@ def convert_depth_uint_to_float(uint_depth_image,
         uint_depth_image[np.array] - Depth image of type uint16
         z_scaling[float] - correction for z values to correspond to true metric
         values
-        depth_scale_mm[float] - Conversion factor for depth (e.g. 1 means that
+        depth_scale[float] - Conversion factor for depth (e.g. 1 means that
         value of 1000 in uint16 depth image corresponds to 1.0 in float depth
         image and to 1m in real world)
 
@@ -48,17 +48,17 @@ def convert_depth_uint_to_float(uint_depth_image,
                "depth_scaling"))
 
     return (
-        uint_depth_image / 1000.0 * depth_scale_mm * z_scaling).astype('float')
+        uint_depth_image / 1000.0 * depth_scale * z_scaling).astype('float')
 
 
-def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
+def convert_depth_float_to_uint(float_depth_image, depth_scale=1.0):
     """
     Function that converts float depth image to uint16, also considering the
     depth scale.
 
     Input:
         float_depth_image[np.array] - Depth image of type float
-        depth_scale_mm[float] - Conversion factor for depth (e.g. 1 means that
+        depth_scale[float] - Conversion factor for depth (e.g. 1 means that
         value of 1000 in uint16 depth image corresponds to 1.0 in float depth
         image and to 1m in real world)
 
@@ -68,7 +68,7 @@ def convert_depth_float_to_uint(float_depth_image, depth_scale_mm=1.0):
 
     log.debug("Converting float depth to uint16 and applying depth_scaling")
 
-    return (float_depth_image * 1000.0 / depth_scale_mm).astype('uint16')
+    return (float_depth_image * 1000.0 / depth_scale).astype('uint16')
 
 
 def save_colored_point_cloud_to_ply(rgb_image,
