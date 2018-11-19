@@ -1,3 +1,9 @@
+"""Contains tools for point cloud generation.
+
+Function save_colored_point_cloud_to_ply takes in an RGB and depth image,
+creates a point cloud and saves it as a PLY file.
+"""
+
 import cv2
 import numpy as np
 import logging as log
@@ -33,26 +39,26 @@ def save_colored_point_cloud_to_ply(rgb_image,
                                     extrinsics,
                                     cloud_path,
                                     use_registered_depth=False):
-    """
-    Function that registers depth image to rgb image. Some of the points are
-    lost due to discretization errors.
+    """Create a point cloud, from RGB-D frame, and save it as a PLY file.
 
-    Input:
-        rgb_image[np.array] - Input rgb image
-        depth_image[np.array] - Input float depth image in m
-        rgb_intrinsics[np.array] - Intrinsic parameters of the rgb camera
-        rgb_distortion[np.array] - Distortion parameters of the rgb camera
-        depth_intrinsics[np.array] - Intrinsic parameters of the depth camera
-        extrinsics[np.array] - Extrinsic parameters between rgb and depth
-        cameras
-        rgb_shape[tuple(int)] - Image size of rgb image (rows, columns)
-        cloud_path[string] - Path where to store the point cloud, including
-        file name and extension
-        use_registered_depth[bool] - If True, registered depth images will be
-        used and therefore the resulting point cloud will be organized in the
-        order of the rgb image.
-    """
+    Note:
+        Input depth image should be in meters.
 
+    Args:
+        rgb_image (np.array): Input RGB image.
+        depth_image (np.array): Input float depth image in meters.
+        rgb_intrinsics (np.array): Intrinsic parameters of the RGB camera.
+        rgb_distortion (np.array): Distortion parameters of the RGB camera.
+        depth_intrinsics (np.array): Intrinsic parameters of the depth camera.
+        extrinsics (np.array): Transformation between RGB and depth camera.
+        rgb_shape (tuple(int)): Image size of the RGB image (rows, columns).
+        cloud_path (str): Path where to store the point cloud, including
+            file name and extension.
+        use_registered_depth (bool, optional): If True, registered depth images
+            will be used and therefore the resulting point cloud will be
+            organized in the order of the RGB image. Defaults to False.
+
+    """
     rgb_image = cv2.undistort(rgb_image, rgb_intrinsics, rgb_distortion)
 
     if use_registered_depth:

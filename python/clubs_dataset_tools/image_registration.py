@@ -1,3 +1,10 @@
+"""Contains tools for image projection.
+
+
+The function register_depth_image registeres a depth image to an RGB image, and
+project_points_to_camera projects 3D points to a specific camera.
+"""
+
 import cv2
 import numpy as np
 import logging as log
@@ -11,29 +18,29 @@ def register_depth_image(float_depth_image,
                          extrinsics,
                          rgb_shape,
                          depth_scale=1.0):
+    """Register a depth image to an RGB image.
+
+    Registered depth image has the same size as the original RGB image.
+    RGB intrinsics are used to convert the registered depth image to 3D points.
+
+    Args:
+        float_depth_image (np.array): Float depth image.
+        rgb_intrinsics (np.array): Intrinsic parameters of the RGB camera.
+        depth_intrinsics (np.array): Intrinsic parameters of the depth camera.
+        extrinsics (np.array): Extrinsic parameters between the RGB and the
+            depth camera.
+        rgb_shape (tuple(int)): Image size of the RGB image (rows, columns).
+        depth_scale (float, optional): Conversion factor for the depth (e.g.
+            1 means that value of 1000 in uint16 depth image corresponds to 1.0
+            in float depth image and to 1m in real world). Defaults to 1.0.
+
+    Returns:
+        float_depth_registered (np.array): Depth image registered to rgb, float
+            type.
+        uint_depth_registered (np.array): Depth image registered to rgb, uint16
+            type.
+
     """
-    Function that registers a depth image to an rgb image. Registered depth
-    image has the same size as the original rgb image. Rgb intrinsics are used
-    to convert the registered depth image to 3D points.
-
-    Input:
-        float_depth_image[np.array] - Float depth image
-        rgb_intrinsics[np.array] - Intrinsic parameters of the rgb camera
-        depth_intrinsics[np.array] - Intrinsic parameters of the depth camera
-        extrinsics[np.array] - Extrinsic parameters between the rgb and the
-        depth cameras
-        rgb_shape[tuple(int)] - Image size of the rgb image (rows, columns)
-        depth_scale[float] - Conversion factor for the depth (e.g. 1 means
-        that value of 1000 in uint16 depth image corresponds to 1.0 in float
-        depth image and to 1m in real world)
-
-    Output:
-        float_depth_registered[np.array] - Depth image registered to rgb, float
-        type
-        uint_depth_registered[np.array] - Depth image registered to rgb, uint16
-        type
-    """
-
     depth_points_3d = cv2.rgbd.depthTo3d(float_depth_image, depth_intrinsics)
     depth_points_in_rgb_frame = cv2.perspectiveTransform(
         depth_points_3d, extrinsics)
@@ -70,26 +77,26 @@ def register_depth_image(float_depth_image,
 
 def project_points_to_camera(points_3d, extrinsics, intrinsics, distortion,
                              image_size):
-    """
-    Function that projects points to the cameras specified by the extrinsic and
-    intrinsic parameteres, distortion coefficients, and image size.
-    Additionally, it provides a bounding box for the projected points.
+    """Project points to the specific camera.
 
-    Input:
-        points_3d[np.array] - Points in 3D
-        extrinsics[np.array] - Intrinsic parameters of the camera
-        intrinsics[np.array] - Extrinsic parameters of the camera
-        distortion[np.array] - Distortion coefficients of the camera
-        image_size[tuple(int)] - Image size of the camera (rows, columns)
+    Camera is defined with the extrinsic and intrinsic parameteres, distortion
+    coefficients, and image size. Additionally, this function provides a
+    bounding box for the projected points.
 
-    Output:
-        projected_points[np.array] - Points in the new camera image, capped at
+    Args:
+        points_3d (np.array): Points in 3D
+        extrinsics (np.array): Intrinsic parameters of the camera
+        intrinsics (np.array): Extrinsic parameters of the camera
+        distortion (np.array): Distortion coefficients of the camera
+        image_size (tuple(int)): Image size of the camera (rows, columns)
+
+    Returns:
+        projected_points (np.array): Points in the new camera image, capped at
         the image_size
-        bounding_box[np.array] - Bounding box of the points in the new camera
+        bounding_box (np.array): Bounding box of the points in the new camera
         view
 
     """
-
     log.debug("Projecting 3D points to the specified camera frame.")
 
     rotation = extrinsics[:3, :3]

@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+"""Executable for registering corresponding depth to RGB images."""
 
 import argparse
 import cv2
@@ -18,20 +19,19 @@ def generate_registered_depth(scene_folder,
                               sensor_folder,
                               calib_params,
                               use_stereo_depth=False):
-    """
-    Function that generates point cloud from RGB and Depth images.
+    """Generate registered depth images.
 
-    Input:
-        scene_folder[string] - Path to the scene folder
-        sensor_folder[list(string)] - List containing folder names for rgb and
-        depth image, as well as the sensor root folder
-        calib_params[CalibrationParams] - Calibration parameters from the
-        camera
-        use_stereo_depth[bool] - If set to True, stereo depth will be used and
-        therefore generated stereo depth intrinsics instead of device depth
-        intrinsics
-    """
+    Args:
+        scene_folder (str): Path to the scene folder.
+        sensor_folder (list(str)): List containing folder names for RGB and
+            depth image, as well as the sensor root folder.
+        calib_params (CalibrationParams): Calibration parameters from the
+            camera.
+        use_stereo_depth (bool, optional): If set to True, stereo depth will be
+            used and therefore generated stereo depth intrinsics instead of
+            device depth intrinsics. Defaults to False.
 
+    """
     images_rgb = find_images_in_folder(scene_folder + sensor_folder[0])
     images_depth = find_images_in_folder(scene_folder + sensor_folder[1])
 
@@ -101,19 +101,19 @@ if __name__ == '__main__':
         '--ps_calib_file',
         type=str,
         default='config/primesense.yaml',
-        help=("Path to Primesense calibration yaml file. By default: "
+        help=("Path to Primesense calibration yaml file. Defaults to "
               "config/primesense.yaml"))
     parser.add_argument(
         '--d415_calib_file',
         type=str,
         default='config/realsense_d415_device_depth.yaml',
-        help=("Path to RealSense D415 calibration yaml file. By default: "
+        help=("Path to RealSense D415 calibration yaml file. Defaults to "
               "config/realsense_d415_device_depth.yaml"))
     parser.add_argument(
         '--d435_calib_file',
         type=str,
         default='config/realsense_d435_device_depth.yaml',
-        help=("Path to RealSense D435 calibration yaml file. By default: "
+        help=("Path to RealSense D435 calibration yaml file. Defaults to "
               "config/realsense_d435_device_depth.yaml"))
     parser.add_argument(
         '--use_only_boxes',

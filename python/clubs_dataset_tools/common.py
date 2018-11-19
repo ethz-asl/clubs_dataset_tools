@@ -1,5 +1,10 @@
-"""
-Common functions and classes.
+"""Contains common classes and functions for camera and image handling.
+
+The CalibrationParams class handles camera paramters and allows loading params
+from a yaml file. convert_depth_uint_to_float and convert_depth_float_to_uint
+are two convinience functions for converting depth images to and from float and
+uint16 type. SensorTransformations class contains transformations from a
+specific camera to all the sensors in the scanning setup.
 """
 
 import yaml
@@ -8,15 +13,47 @@ import logging as log
 
 
 class CalibrationParams(object):
-    """
-    Camera intrinsic and extrinsic parameters.
+    """Camera intrinsic and extrinsic parameters.
+
+    Atributes:
+        rgb_intrinsics (np.array: 3x3 RGB camera intrinsic parameters matrix.
+        rgb_distortion_coeffs (np.array()): 1x5 RGB camera distortion
+            coefficients (r1, r2, t1, t2, r3).
+        hand_eye_transform (np.array): 4x4 homogeneous transformation between
+            RGB camera and robot's end-effector.
+        depth_intrinsics (np.array): 3x3 Depth camera intrinsic parameters
+            matrix.
+        depth_distortion_coeffs (np.array): 1x5 Depth camera distortion
+            coefficients (r1, r2, t1, t2, r3).
+        depth_extrinsics (np.array): 4x4 homogeneous transformation between
+            RGB camera and Depth(IR1) camera.
+        ir1_intrinsics (np.array): 3x3 IR1 camera intrinsic parameters matrix.
+        ir1_distortion_coeffs (np.array): 1x5 IR1 camera distortion
+            coefficients (r1, r2, t1, t2, r3).
+        ir2_intrinsics (np.array): 3x3 IR2 camera intrinsic parameters matrix.
+        ir2_distortion_coeffs (np.array): 1x5 IR2 camera distortion
+            coefficients (r1, r2, t1, t2, r3).
+        ir_extrinsics (np.array): 4x4 homogeneous transformation between
+            IR1 camera and IR2 camera.
+        extrinsics_r (np.array): 3x3 rotation matrix representing the
+            rotation part of inverse ir_extrinsics.
+        extrinsics_t (np.array): 3x1 translation vector representing the
+            translation part of inverse ir_extrinsics.
+        rgb_width (double): Width of RGB camera image.
+        rgb_height (double): Height of RGB camera image.
+        depth_width (double): Width of Depth camera image.
+        depth_height (double): Height of Depth camera image.
+        z_scaling (double): Scaling factor for the Depth image.
+        depth_scale_mm (double): Units of the Depth image.
+
     """
 
     def __init__(self):
-        """
-        Constructor for the CalibrationParams.
-        """
+        """Construct the CalibrationParams class.
 
+        The constructor for the CalibrationParams class initializes all the
+        atributes of the class to either empty numpy array or zero values.
+        """
         log.debug("Initialized an empty CalibrationParams class.")
 
         self.rgb_intrinsics = np.array([])
@@ -40,15 +77,15 @@ class CalibrationParams(object):
         self.depth_scale = 0.0
 
     def read_from_yaml(self, yaml_file):
-        """
-        Function that reads the calibration parameters from the yaml file.
+        """Read the calibration parameters from a yaml file.
 
-        Input:
-            yaml_file[string] - Path to the yaml file containing the
-            calibration parameters.
-        """
+        Args:
+            yaml_file (str): Path to the yaml file containing the calibration
+                parameters.
 
-        log.debug("Initialized CalibrationParams from yaml file: " + yaml_file)
+        """
+        log.debug("Initialized CalibrationParams from a yaml file: " +
+                  yaml_file)
 
         with open(yaml_file, 'r') as file_pointer:
             calibration_params = yaml.load(file_pointer)
@@ -112,15 +149,32 @@ class CalibrationParams(object):
 
 
 class SensorTransformations(object):
-    """
-    Class containing all the sensor poses with respoect to the Realsense D415.
+    """Transformations to all the sensors.
+
+    Attributes:
+        d415_rgb (np.array): 4x4 homogeneous transformation to RealSense D415
+            RGB camera.
+        d415_depth (np.array): 4x4 homogeneous transformation to RealSense D415
+            depth camera.
+        d435_rgb (np.array): 4x4 homogeneous transformation to RealSense D435
+            RGB camera.
+        d435_depth (np.array): 4x4 homogeneous transformation to RealSense D415
+            depth camera.
+        ps_rgb (np.array): 4x4 homogeneous transformation to PrimeSense RGB
+            camera.
+        ps_depth (np.array): 4x4 homogeneous transformation to PrimeSense depth
+            camera.
+        cham_rgb (np.array): 4x4 homogeneous transformation to Chameleon3 RGB
+            camera.
+
     """
 
     def __init__(self):
-        """
-        Constructor for the SensorTransformations.
-        """
+        """Construct the SensorTransformations class.
 
+        The constructor for the SensorTransformations class initializes all the
+        atributes of the class to an empty numpy array.
+        """
         log.debug("Initialized an empty SensorTransformations class.")
 
         self.d415_rgb = np.array([])
@@ -132,15 +186,14 @@ class SensorTransformations(object):
         self.cham_rgb = np.array([])
 
     def read_from_yaml(self, yaml_file):
-        """
-        Function that reads the sensor transformations from the yaml file.
+        """Read the sensor transformations from a yaml file.
 
-        Input:
-            yaml_file[string] - Path to the yaml file containing the
-            sensor transformations.
-        """
+        Args:
+            yaml_file (str): Path to the yaml file containing the sensor
+                transformations.
 
-        log.debug("Initialized SensorTransformations from yaml file: " +
+        """
+        log.debug("Initialized SensorTransformations from a yaml file: " +
                   yaml_file)
 
         with open(yaml_file, 'r') as file_pointer:
@@ -179,22 +232,23 @@ class SensorTransformations(object):
 def convert_depth_uint_to_float(uint_depth_image,
                                 z_scaling=1.0,
                                 depth_scale=1.0):
+    """Convert uint16 depth image to float.
+
+    During conversion, the depth scale and z_scaling are taken into
+    consideration.
+
+    Args:
+        uint_depth_image (np.array): Depth image of type uint16.
+        z_scaling (float, optional): Correction for z values to correspond to
+            true metric values. Defaults to 1.0.
+        depth_scale (float, optional): Conversion factor for depth (e.g. 1
+            means that value of 1000 in uint16 depth image corresponds to 1.0
+            in float depth image and to 1m in real world). Defaults to 1.0.
+
+    Returns:
+        float_depth_image (np.array): Depth image of type float.
+
     """
-    Function that converts uint16 depth image to float, also considering the
-    depth scale and z_scaling.
-
-    Input:
-        uint_depth_image[np.array] - Depth image of type uint16
-        z_scaling[float] - correction for z values to correspond to true metric
-        values
-        depth_scale[float] - Conversion factor for depth (e.g. 1 means that
-        value of 1000 in uint16 depth image corresponds to 1.0 in float depth
-        image and to 1m in real world)
-
-    Output:
-        float_depth_image[np.array] - Depth image of type float
-    """
-
     log.debug(("Converting uint depth to float and applying z_scaling and "
                "depth_scaling"))
 
@@ -202,20 +256,18 @@ def convert_depth_uint_to_float(uint_depth_image,
 
 
 def convert_depth_float_to_uint(float_depth_image, depth_scale=1.0):
+    """Convert float depth image to uint16, also considering the depth scale.
+
+    Args:
+        float_depth_image (np.array): Depth image of type float.
+        depth_scale (float, optional): Conversion factor for depth (e.g. 1
+            means that value of 1000 in uint16 depth image corresponds to 1.0
+            in float depth image and to 1m in real world). Defualts to 1.0.
+
+    Returns:
+        uint_depth_image (np.array) - Depth image of type uint16.
+
     """
-    Function that converts float depth image to uint16, also considering the
-    depth scale.
-
-    Input:
-        float_depth_image[np.array] - Depth image of type float
-        depth_scale[float] - Conversion factor for depth (e.g. 1 means that
-        value of 1000 in uint16 depth image corresponds to 1.0 in float depth
-        image and to 1m in real world)
-
-    Output:
-        uint_depth_image[np.array] - Depth image of type uint16
-    """
-
     log.debug("Converting float depth to uint16 and applying depth_scaling")
 
     return (float_depth_image * 1000.0 / depth_scale).astype('uint16')

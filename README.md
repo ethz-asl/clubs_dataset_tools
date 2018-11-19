@@ -21,7 +21,7 @@ If you are using these tools, please cite our [paper](http://todo)::
 cd <your_preferred_directory>
 git clone https://github.com/ethz-asl/clubs_dataset_tools
 
-To install all the python requirements navigate to python folder and run:
+To install all the python requirements run:
 ```
 pip install -r requirements.txt
 ```
