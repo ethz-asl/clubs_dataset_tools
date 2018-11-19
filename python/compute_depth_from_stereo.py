@@ -80,7 +80,7 @@ def compute_stereo_depth(scene_folder,
                     '_rect_r.png', rectified_r)
 
             log.debug("Stereo matching " + str(i) + '. image pair')
-            depth_scale = 1000 / calib_params.depth_scale_mm
+            depth_scale = 1000 / calib_params.depth_scale
             depth_uint, depth_float, disparity_float = stereo_match(
                 rectified_l,
                 rectified_r,

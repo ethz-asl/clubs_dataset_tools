@@ -64,7 +64,7 @@ def generate_registered_depth(scene_folder,
         for i in range(len(rgb_images)):
             float_depth_image = convert_depth_uint_to_float(
                 depth_images[i], calib_params.z_scaling,
-                calib_params.depth_scale_mm)
+                calib_params.depth_scale)
 
             depth_registerd_path = (depth_registered_folder + '/' +
                                     timestamps[i] + '_registered_depth.png')
@@ -73,7 +73,7 @@ def generate_registered_depth(scene_folder,
                 float_depth_image, calib_params.rgb_intrinsics,
                 calib_params.depth_intrinsics, calib_params.depth_extrinsics,
                 (calib_params.rgb_height, calib_params.rgb_width),
-                calib_params.depth_scale_mm)
+                calib_params.depth_scale)
 
             cv2.imwrite(depth_registerd_path, uint_depth_reg)
 
