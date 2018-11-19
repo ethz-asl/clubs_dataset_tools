@@ -59,6 +59,8 @@ def save_colored_point_cloud_to_ply(rgb_image,
             organized in the order of the RGB image. Defaults to False.
 
     """
+    log.debug("Generating a colored point cloud from an RGB-D frame.")
+
     rgb_image = cv2.undistort(rgb_image, rgb_intrinsics, rgb_distortion)
 
     if use_registered_depth:

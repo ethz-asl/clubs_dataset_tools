@@ -130,7 +130,8 @@ if __name__ == '__main__':
         '--log',
         type=str,
         default='CRITICAL',
-        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
+        help=("Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL)."
+              "Defaults to CRITICAL."))
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)

@@ -82,12 +82,8 @@ def compute_stereo_depth(scene_folder,
             log.debug("Stereo matching " + str(i) + '. image pair')
             depth_scale = 1000 / calib_params.depth_scale
             depth_uint, depth_float, disparity_float = stereo_match(
-                rectified_l,
-                rectified_r,
-                calib_params.extrinsics_t[0],
-                new_calibration_left[0, 0],
-                stereo_params,
-                sensor_folder[2][1:],
+                rectified_l, rectified_r, calib_params.extrinsics_t[0],
+                new_calibration_left[0, 0], stereo_params, sensor_folder[2][1:],
                 depth_scale)
 
             zero_distortion = np.array([0, 0, 0, 0, 0])
@@ -161,7 +157,8 @@ if __name__ == '__main__':
         '--log',
         type=str,
         default='CRITICAL',
-        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
+        help=("Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL)."
+              "Defaults to CRITICAL."))
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)
