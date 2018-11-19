@@ -1,6 +1,7 @@
 """Contains tools for image projection.
 
-Function register_depth_image registeres a depth image to an RGB image, and
+
+The function register_depth_image registeres a depth image to an RGB image, and
 project_points_to_camera projects 3D points to a specific camera.
 """
 

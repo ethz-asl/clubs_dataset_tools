@@ -1,4 +1,4 @@
-"""Contains tool for proper data handling.
+"""Contains tools for proper data handling.
 
 These include functions for reading image and CSV files, finding proper folders
 and creating missing ones.
@@ -76,8 +76,7 @@ def find_images_in_folder(image_folder, image_extension='.png'):
 
 
 def find_ir_image_folders(input_folder):
-    """Return left and right IR image folders paths, if they exist,
-    for Realsense sensors.
+    """Return left and right IR image folders paths for Realsense sensors.
 
     Note:
         Path is relative to the input folder path.
@@ -132,8 +131,7 @@ def find_ir_image_folders(input_folder):
 def find_rgb_d_image_folders(input_folder,
                              use_stereo_depth=False,
                              use_registered_depth=False):
-    """Return RGB and depth image folders paths, if they exist, for all
-    the sensors.
+    """Return RGB and depth image folders paths for all the sensors.
 
     Note:
         Path is relative to the input folder path.

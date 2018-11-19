@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Executable for generating depth images from stereo pair."""
+"""Executable for generating depth images from a stereo pair."""
 
 import argparse
 import cv2
@@ -22,7 +22,7 @@ def compute_stereo_depth(scene_folder,
                          stereo_params,
                          calib_params,
                          save_rectified=False):
-    """Rectify an image and apply SGBM algorithm to compute the depth.
+    """Rectify an image and apply a SGBM algorithm to compute the depth image.
 
     Args:
         scene_folder (str): Path to the scene folder.
