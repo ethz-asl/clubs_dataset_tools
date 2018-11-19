@@ -1,8 +1,11 @@
 """Contains tools for creating label images."""
 
+import os
 import cv2
 import random
 import numpy as np
+import logging as log
+from copy import deepcopy
 
 
 def random_color():
@@ -54,3 +57,74 @@ def bbox_to_image(img, bbox, value, line_thickness=2):
     cv2.rectangle(img, (int(bbox[0]), int(bbox[1])),
                   (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3])), value,
                   line_thickness)
+
+
+def get_source_image_from_label_path(label_full_path):
+    """Get the source image and relevant information from the label file path.
+
+    Args:
+        label_full_path (str): Full path to the label file.
+
+    Returns:
+        label_file_name (str): Name of the label file.
+        sensor (str): Name of sensor that was was used for capturing the source
+            image.
+        source_image (str): Source image.
+
+    """
+    label_file = label_full_path.split('_images/')[-1]
+    label_file_path = label_full_path.split('/' + label_file)[0]
+    label_file_name, ext = os.path.splitext(label_file)
+    source_image_path = label_full_path.split('/labels')
+    source_image_path = source_image_path[0] + source_image_path[1]
+    source_image_path = source_image_path.replace('_label.json', '.png')
+    sensor = (label_file_path.split('/labels')[0]).split('/')[-1]
+
+    source_image = cv2.imread(source_image_path)
+
+    return label_file_name, sensor, source_image
+
+
+def create_label_image_from_json_data(json_data,
+                                      original_img,
+                                      image_save_path=None):
+    """Create a label image based on the data from a json label file.
+
+    Note:
+        If image save path is not specified, the created label image will be
+        displayed in a new window.
+
+    Args:
+        json_data (dict): Dictonary containing the data from a single json
+            label file. It should contain 'poly', 'bbox' and 'labels' keys.
+        original_img (np.array): Original image for which the labeling is done.
+        image_save_path (str, optional): Save location for the created label
+            image. Defaults to None.
+
+    """
+    log.debug("Creating a label image from a json file.")
+
+    color_label_img = deepcopy(original_img)
+    bbox_img = deepcopy(original_img)
+    output = deepcopy(original_img)
+
+    colors = {}
+    for i in range(len(json_data['labels'])):
+        colors[json_data['labels'][i]] = random_color()
+
+    for i in range(len(json_data['labels'])):
+        poly = json_data['poly'][i]
+        bbox = json_data['bbox'][i]
+
+        color = colors[json_data['labels'][i]]
+        poly_to_image(color_label_img, poly, color)
+        bbox_to_image(bbox_img, bbox, color)
+        alpha = 0.6
+        cv2.addWeighted(color_label_img, alpha, bbox_img, 1 - alpha, 0, output)
+
+    if image_save_path is not None:
+        cv2.imwrite(image_save_path, output)
+    else:
+        cv2.namedWindow('Label Image')
+        cv2.imshow('Label Image', output)
+        cv2.waitKey(0)
