@@ -3,7 +3,6 @@
 import argparse
 import cv2
 import logging as log
-
 from tqdm import tqdm
 
 from clubs_dataset_tools.filesystem_tools import (

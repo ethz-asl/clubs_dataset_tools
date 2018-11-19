@@ -3,10 +3,10 @@
 import os
 import cv2
 import libtiff
-import logging as log
 import glob
 import csv
 import stat
+import logging as log
 
 
 def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):

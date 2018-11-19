@@ -5,7 +5,6 @@ import cv2
 import logging as log
 import numpy as np
 from scipy import signal
-
 from tqdm import tqdm
 
 from clubs_dataset_tools.stereo_matching import (rectify_images, stereo_match,

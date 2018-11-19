@@ -1,6 +1,6 @@
 import cv2
-import logging as log
 import numpy as np
+import logging as log
 
 from clubs_dataset_tools.common import (convert_depth_float_to_uint)
 
@@ -100,9 +100,9 @@ def project_points_to_camera(points_3d, extrinsics, intrinsics, distortion,
 
     projected_points = np.array(projected_points_raw[0]).reshape(-1, 2)
 
-    projected_points[projected_points[:, 0] < 0, 0] = 0
+    projected_points[projected_points[:, 0] < 0, 0] = 0.0
     projected_points[projected_points[:, 0] > image_size[1], 0] = image_size[1]
-    projected_points[projected_points[:, 1] < 0, 1] = 0
+    projected_points[projected_points[:, 1] < 0, 1] = 0.0
     projected_points[projected_points[:, 1] > image_size[0], 1] = image_size[0]
 
     bounding_box = np.array([
