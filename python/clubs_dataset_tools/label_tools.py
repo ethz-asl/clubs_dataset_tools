@@ -87,19 +87,19 @@ def get_source_image_from_label_path(label_full_path):
 
 def create_label_image_from_json_data(json_data,
                                       original_img,
-                                      image_save_path=None):
+                                      image_save_file=None):
     """Create a label image based on the data from a json label file.
 
     Note:
-        If image save path is not specified, the created label image will be
+        If image save file is not specified, the created label image will be
         displayed in a new window.
 
     Args:
         json_data (dict): Dictonary containing the data from a single json
             label file. It should contain 'poly', 'bbox' and 'labels' keys.
         original_img (np.array): Original image for which the labeling is done.
-        image_save_path (str, optional): Save location for the created label
-            image. Defaults to None.
+        image_save_file (str, optional): Save location and file name for the
+            created label image. Defaults to None.
 
     """
     log.debug("Creating a label image from a json file.")
@@ -122,8 +122,8 @@ def create_label_image_from_json_data(json_data,
         alpha = 0.6
         cv2.addWeighted(color_label_img, alpha, bbox_img, 1 - alpha, 0, output)
 
-    if image_save_path is not None:
-        cv2.imwrite(image_save_path, output)
+    if image_save_file is not None:
+        cv2.imwrite(image_save_file, output)
     else:
         cv2.namedWindow('Label Image')
         cv2.imshow('Label Image', output)
