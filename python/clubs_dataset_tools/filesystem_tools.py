@@ -304,6 +304,30 @@ def create_point_cloud_folder(sensor_folder):
     return point_cloud_folder
 
 
+def create_stereo_point_cloud_folder(sensor_folder):
+    """
+    Function that creates the folder for point clouds genereated using the
+    stereo depth images, if it does not exist.
+
+    Input:
+        sensor_folder[string] - Path to the sensor folder
+
+    Output:
+        stereo_point_cloud_folder[string] - Path to the created point cloud
+        folder
+    """
+
+    stereo_point_cloud_folder = sensor_folder + '/stereo_point_clouds'
+
+    if not os.path.exists(stereo_point_cloud_folder):
+        os.makedirs(stereo_point_cloud_folder)
+
+    log.debug("Created a new stereo_point_clouds folder: \n" +
+              stereo_point_cloud_folder)
+
+    return stereo_point_cloud_folder
+
+
 def create_depth_registered_folder(sensor_folder):
     """
     Function that creates the folder for registered depth images if it does
@@ -322,10 +346,35 @@ def create_depth_registered_folder(sensor_folder):
     if not os.path.exists(depth_registered_folder):
         os.makedirs(depth_registered_folder)
 
-    log.debug("Created a new depth_registered_images folder: \n" +
+    log.debug("Created a new registered_depth_images folder: \n" +
               depth_registered_folder)
 
     return depth_registered_folder
+
+
+def create_stereo_depth_registered_folder(sensor_folder):
+    """
+    Function that creates the folder for registered stereo depth images if it
+    does not exist.
+
+    Input:
+        sensor_folder[string] - Path to the sensor folder
+
+    Output:
+        stereo_depth_registered_folder[string] - Path to the created stereo
+        depth registered folder
+    """
+
+    stereo_depth_registered_folder = (
+        sensor_folder + '/registered_stereo_depth_images')
+
+    if not os.path.exists(stereo_depth_registered_folder):
+        os.makedirs(stereo_depth_registered_folder)
+
+    log.debug("Created a new registered_stereo_depth_images folder: \n" +
+              stereo_depth_registered_folder)
+
+    return stereo_depth_registered_folder
 
 
 def create_rectified_images_folder(sensor_folder):

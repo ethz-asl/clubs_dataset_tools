@@ -61,4 +61,4 @@ sensor_name: "primesense"
 serial_number: "n/a"
 robot_name: "ur10"
 z_scaling: 1.032500
-depth_scale_mm: 1.000000
+depth_scale: 1.000000

@@ -61,4 +61,4 @@ sensor_name: "chameleon"
 serial_number: "n/a"
 robot_name: "ur10"
 z_scaling: 1.000000
-depth_scale_mm: 0.000000
+depth_scale: 0.000000
