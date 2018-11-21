@@ -172,6 +172,8 @@ def rectify_images(image_l, camera_matrix_l, dist_coeffs_l, image_r,
             image.
 
     """
+    log.debug("Rectifying stereo pair images.")
+
     (rotation_matrix_left, rotation_matrix_right, new_calibration_left,
      new_calibration_right, disparity_to_depth_map, valid_ROI_left,
      valid_ROI_right) = cv2.stereoRectify(
@@ -239,6 +241,8 @@ def stereo_match(undistorted_rectified_l,
             float image.
 
     """
+    log.debug("Performing stereo matching on undistorted, rectified images.")
+
     if sensor_name == "realsense_d415":
         stereo_matcher = cv2.StereoSGBM_create(
             stereo_params.d415_min_disparity,

@@ -22,7 +22,7 @@ def compute_stereo_depth(scene_folder,
                          stereo_params,
                          calib_params,
                          save_rectified=False):
-    """Rectify images and apply SGBM algorithm to compute a depth image.
+    """Rectify an image and apply a SGBM algorithm to compute the depth image.
 
     Args:
         scene_folder (str): Path to the scene folder.
@@ -157,7 +157,8 @@ if __name__ == '__main__':
         '--log',
         type=str,
         default='CRITICAL',
-        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
+        help=("Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL)."
+              "Defaults to CRITICAL."))
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)

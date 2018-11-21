@@ -21,7 +21,7 @@ def generate_point_cloud(scene_folder,
                          calib_params,
                          use_stereo_depth=False,
                          use_registered_depth=False):
-    """Generate point cloud from RGB and depth images.
+    """Generate a point cloud from an RGB and a depth image.
 
     Args:
         scene_folder (str): Path to the scene folder.
@@ -137,7 +137,8 @@ if __name__ == '__main__':
         '--log',
         type=str,
         default='CRITICAL',
-        help="Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL).")
+        help=("Logging verbosity (DEBUG, INFO, WARNING, ERROR, CRITICAL)."
+              "Defaults to CRITICAL."))
     args = parser.parse_args()
 
     numeric_level = getattr(log, args.log.upper(), None)

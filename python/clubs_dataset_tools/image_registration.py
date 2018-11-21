@@ -41,6 +41,8 @@ def register_depth_image(float_depth_image,
             type.
 
     """
+    log.debug("Computing the registered depth image.")
+
     depth_points_3d = cv2.rgbd.depthTo3d(float_depth_image, depth_intrinsics)
     depth_points_in_rgb_frame = cv2.perspectiveTransform(
         depth_points_3d, extrinsics)
@@ -51,8 +53,6 @@ def register_depth_image(float_depth_image,
     cy = rgb_intrinsics[1, 2]
 
     float_depth_registered = np.zeros(rgb_shape, dtype='float')
-
-    log.debug("Computing the registered depth image.")
 
     for points in depth_points_in_rgb_frame:
         for point in points:
