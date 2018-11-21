@@ -2,7 +2,7 @@
 Welcome to the official CLUttered Box Scenes (CLUBS) dataset tools webpage.
 This repository contains tools for downloading and manipulating the dataset.
 More specifically, these tools include:
-- Download script for different parts of the dataset
+- Download script for different parts of the dataset (coming soon)
 - Script for computing depth images from an IR stereo pair
 - Script for generating point clouds
 - Script for registering depth images to corresponding RGB images
