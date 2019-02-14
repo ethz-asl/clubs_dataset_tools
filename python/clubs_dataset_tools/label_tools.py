@@ -101,6 +101,9 @@ def create_label_image_from_json_data(json_data,
         image_save_file (str, optional): Save location and file name for the
             created label image. Defaults to None.
 
+    Returns:
+        output (np.array): Image with annotations and bounding boxes.
+
     """
     log.debug("Creating a label image from a json file.")
 
@@ -124,7 +127,5 @@ def create_label_image_from_json_data(json_data,
 
     if image_save_file is not None:
         cv2.imwrite(image_save_file, output)
-    else:
-        cv2.namedWindow('Label Image')
-        cv2.imshow('Label Image', output)
-        cv2.waitKey(0)
+
+    return output
