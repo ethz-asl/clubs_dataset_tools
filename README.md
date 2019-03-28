@@ -35,7 +35,7 @@ This dependency is only required if running the hand-eye calibration part in the
 Navigate to clubs_dataset_tools/matlab/calibration_tools/ folder.
 In order to run the calibration, all the data (images and poses) needs to be placed in the folder matlab/data.
 
-![alt text](https://github.com/ethz-asl/clubs_dataset_tools/blob/feature/cloud_generation/images/data_folder_structure.png)
+![alt text](https://github.com/ethz-asl/clubs_dataset_tools/blob/master/images/data_folder_structure.png)
 
 Before starting the calibration, several parameters in the calibration_script.m file need to be set:
 
