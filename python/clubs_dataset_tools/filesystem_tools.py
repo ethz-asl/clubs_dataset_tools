@@ -414,10 +414,9 @@ def read_from_csv_file(file_path):
     output = []
 
     with open(file_path, 'rb') as csvfile:
-        file_reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        file_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in file_reader:
-            split_row = row[0].split(',')
-            output.append(map(str, split_row))
+            output.append(map(float, row))
 
     return output
 
