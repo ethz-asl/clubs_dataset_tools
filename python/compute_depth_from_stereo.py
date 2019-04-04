@@ -11,8 +11,8 @@ from tqdm import tqdm
 from clubs_dataset_tools.stereo_matching import (rectify_images, stereo_match,
                                                  StereoMatchingParams)
 from clubs_dataset_tools.filesystem_tools import (
-    read_images, find_images_in_folder, find_all_folders, find_ir_image_folders,
-    compare_image_names, create_stereo_depth_folder,
+    read_images, find_files_with_extension_in_folder, find_all_folders,
+    find_ir_image_folders, compare_image_names, create_stereo_depth_folder,
     create_rectified_images_folder)
 from clubs_dataset_tools.common import (CalibrationParams)
 
@@ -35,8 +35,10 @@ def compute_stereo_depth(scene_folder,
             saved. Defaults to False.
 
     """
-    images_left = find_images_in_folder(scene_folder + sensor_folder[0])
-    images_right = find_images_in_folder(scene_folder + sensor_folder[1])
+    images_left = find_files_with_extension_in_folder(scene_folder +
+                                                      sensor_folder[0])
+    images_right = find_files_with_extension_in_folder(scene_folder +
+                                                       sensor_folder[1])
 
     timestamps = compare_image_names(images_left, images_right)
 

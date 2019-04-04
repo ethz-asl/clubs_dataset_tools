@@ -7,7 +7,7 @@ import logging as log
 from tqdm import tqdm
 
 from clubs_dataset_tools.filesystem_tools import (
-    read_images, find_images_in_folder, find_all_folders,
+    read_images, find_files_with_extension_in_folder, find_all_folders,
     find_rgb_d_image_folders, compare_image_names, create_point_cloud_folder,
     create_stereo_point_cloud_folder)
 from clubs_dataset_tools.common import (CalibrationParams,
@@ -25,7 +25,7 @@ def generate_point_cloud(scene_folder,
 
     Args:
         scene_folder (str): Path to the scene folder.
-        sensor_folder (list(str)): List containing folder names for RGB and
+        sensor_folder (str): List containing folder names for RGB and
             depth image, as well as the sensor root folder.
         calib_params (CalibrationParams): Calibration parameters from the
             camera.
@@ -36,8 +36,10 @@ def generate_point_cloud(scene_folder,
             will be used. Defaults to False.
 
     """
-    images_rgb = find_images_in_folder(scene_folder + sensor_folder[0])
-    images_depth = find_images_in_folder(scene_folder + sensor_folder[1])
+    images_rgb = find_files_with_extension_in_folder(scene_folder +
+                                                     sensor_folder[0])
+    images_depth = find_files_with_extension_in_folder(scene_folder +
+                                                       sensor_folder[1])
 
     timestamps = compare_image_names(images_rgb, images_depth)
 
@@ -69,12 +71,15 @@ def generate_point_cloud(scene_folder,
             float_depth_image = convert_depth_uint_to_float(
                 depth_images[i], calib_params.z_scaling,
                 calib_params.depth_scale)
+            undistorted_rgb_image = cv2.undistort(
+                rgb_images[i], calib_params.rgb_intrinsics,
+                calib_params.rgb_distortion_coeffs)
 
             point_cloud_path = (
                 point_cloud_folder + '/' + timestamps[i] + '_point_cloud.ply')
             save_colored_point_cloud_to_ply(
-                rgb_images[i], float_depth_image, calib_params.rgb_intrinsics,
-                calib_params.rgb_distortion_coeffs,
+                undistorted_rgb_image, float_depth_image,
+                calib_params.rgb_intrinsics, calib_params.rgb_distortion_coeffs,
                 calib_params.depth_intrinsics, calib_params.depth_extrinsics,
                 point_cloud_path, use_registered_depth)
             stereo_bar.update()

@@ -7,7 +7,7 @@ import logging as log
 from tqdm import tqdm
 
 from clubs_dataset_tools.filesystem_tools import (
-    read_images, find_images_in_folder, find_all_folders,
+    read_images, find_files_with_extension_in_folder, find_all_folders,
     find_rgb_d_image_folders, compare_image_names,
     create_depth_registered_folder, create_stereo_depth_registered_folder)
 from clubs_dataset_tools.common import (CalibrationParams,
@@ -32,8 +32,10 @@ def generate_registered_depth(scene_folder,
             device depth intrinsics. Defaults to False.
 
     """
-    images_rgb = find_images_in_folder(scene_folder + sensor_folder[0])
-    images_depth = find_images_in_folder(scene_folder + sensor_folder[1])
+    images_rgb = find_files_with_extension_in_folder(scene_folder +
+                                                     sensor_folder[0])
+    images_depth = find_files_with_extension_in_folder(scene_folder +
+                                                       sensor_folder[1])
 
     timestamps = compare_image_names(images_rgb, images_depth)
 
