@@ -8,8 +8,39 @@ import os
 import cv2
 import libtiff
 import glob
+import json
 import csv
 import logging as log
+
+
+def read_label_files(label_files, extension='.json'):
+    """Read all the annotations from a list of file paths.
+
+    Args:
+        label_files (list(str)): List containing full label file paths.
+        extension (str, optional): Extension of the label files.
+            Defaults to '.json'.
+
+    Returns:
+        labels (list(dict)): List of dicts containing the annotations.
+
+    """
+    labels = []
+
+    for file in label_files:
+        if file.endswith(extension):
+            log.debug("Loading " + file)
+            with open(file) as f:
+                json_data = json.load(f)
+            labels.append(json_data)
+        else:
+            log.error("\nUnknown extension of the image file!")
+
+    if len(labels) is 0:
+        log.error("\nNo label files could be retrieved!\n" +
+                  "List containing label file full paths:\n" + str(label_files))
+
+    return labels
 
 
 def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):
@@ -50,13 +81,12 @@ def read_images(image_files, image_extension='.png', image_type=cv2.CV_16UC1):
     return images
 
 
-def find_images_in_folder(image_folder, image_extension='.png'):
-    """Return image filenames that are present in the image folder.
+def find_files_with_extension_in_folder(folder, extension='.png'):
+    """Return filenames that are present in the folder that end with extension.
 
     Args:
-        image_folder (str): Path to the image folder.
-        image_extension (str, optional): Extension of the images to search for.
-            Defaults to '.png'.
+        folder (str): Path to the desired folder.
+        extension (str, optional): Extension to search for. Defaults to '.png'.
 
     Returns:
         images (list(str)): List containing image filenames.
@@ -64,11 +94,11 @@ def find_images_in_folder(image_folder, image_extension='.png'):
     """
     images = []
 
-    files = os.listdir(image_folder)
+    files = os.listdir(folder)
 
     for file in files:
         log.debug("Found " + file)
-        if file.endswith(image_extension):
+        if file.endswith(extension):
             log.debug("It has the right extension, adding it to the image list")
             images.append(file)
 
@@ -414,10 +444,9 @@ def read_from_csv_file(file_path):
     output = []
 
     with open(file_path, 'rb') as csvfile:
-        file_reader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        file_reader = csv.reader(csvfile, delimiter=',', quotechar='|')
         for row in file_reader:
-            split_row = row[0].split(',')
-            output.append(map(str, split_row))
+            output.append(map(float, row))
 
     return output
 

@@ -32,7 +32,7 @@ def poly_to_image(img, poly, value):
         value (list(int) or int): Value of the points inside the polygon. Can
             be 3-channel (RGB) or 1-channel (mono) depending on the input
             image.
-
+ 
     """
     mask = np.array([poly], dtype='int32')
     cv2.fillPoly(img, mask, value)
@@ -75,10 +75,11 @@ def get_source_image_from_label_path(label_full_path):
     label_file = label_full_path.split('_images/')[-1]
     label_file_path = label_full_path.split('/' + label_file)[0]
     label_file_name, ext = os.path.splitext(label_file)
+    sensor = (label_file_path.split('/labels')[0]).split('/')[-1]
     source_image_path = label_full_path.split('/labels')
     source_image_path = source_image_path[0] + source_image_path[1]
-    source_image_path = source_image_path.replace('_label.json', '.png')
-    sensor = (label_file_path.split('/labels')[0]).split('/')[-1]
+    source_image_path = source_image_path.replace('_label_' + sensor + '.json',
+                                                  '.png')
 
     source_image = cv2.imread(source_image_path)
 
@@ -87,19 +88,21 @@ def get_source_image_from_label_path(label_full_path):
 
 def create_label_image_from_json_data(json_data,
                                       original_img,
+                                      draw_bbox=True,
                                       image_save_file=None):
     """Create a label image based on the data from a json label file.
-
-    Note:
-        If image save file is not specified, the created label image will be
-        displayed in a new window.
 
     Args:
         json_data (dict): Dictonary containing the data from a single json
             label file. It should contain 'poly', 'bbox' and 'labels' keys.
         original_img (np.array): Original image for which the labeling is done.
+        draw_bbox (bool): If set to false, bounding boxes will not be in the
+            output image.
         image_save_file (str, optional): Save location and file name for the
             created label image. Defaults to None.
+
+    Returns:
+        output (np.array): Image with annotations and bounding boxes.
 
     """
     log.debug("Creating a label image from a json file.")
@@ -118,13 +121,12 @@ def create_label_image_from_json_data(json_data,
 
         color = colors[json_data['labels'][i]]
         poly_to_image(color_label_img, poly, color)
-        bbox_to_image(bbox_img, bbox, color)
+        if (draw_bbox):
+            bbox_to_image(bbox_img, bbox, color)
         alpha = 0.6
         cv2.addWeighted(color_label_img, alpha, bbox_img, 1 - alpha, 0, output)
 
     if image_save_file is not None:
         cv2.imwrite(image_save_file, output)
-    else:
-        cv2.namedWindow('Label Image')
-        cv2.imshow('Label Image', output)
-        cv2.waitKey(0)
+
+    return output

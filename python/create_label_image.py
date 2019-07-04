@@ -44,7 +44,7 @@ if __name__ == '__main__':
         else:
             image_save_path = None
 
-        create_label_image_from_json_data(json_data, source_image,
+        create_label_image_from_json_data(json_data, source_image, True,
                                           image_save_path)
     else:
         parser.print_help()
